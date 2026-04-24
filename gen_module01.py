@@ -256,31 +256,18 @@ def page2(c):
     for t in tips:
         content.append(Paragraph(f"<bullet>•</bullet>  {t}", S_BULLET))
 
-    content.append(Paragraph("DID YOU KNOW?", S_HDR))
-    fact_data = [[Paragraph(
-        "The Northern Cardinal is the official state bird of Illinois, Indiana, Kentucky, "
-        "North Carolina, Ohio, Virginia, and West Virginia — seven states in total, more "
-        "than any other bird species. Its brilliant red plumage inspired the name of the "
-        "St. Louis Cardinals baseball team and numerous other sports franchises across "
-        "the eastern United States.", S_FACT)]]
-    fact_tbl = Table(fact_data, colWidths=[CW])
-    fact_tbl.setStyle(TableStyle([
-        ("BACKGROUND",(0,0),(-1,-1),G_LIGHT),
-        ("TOPPADDING",(0,0),(-1,-1),8),("BOTTOMPADDING",(0,0),(-1,-1),8),
-        ("LEFTPADDING",(0,0),(-1,-1),10),("RIGHTPADDING",(0,0),(-1,-1),10),
-        ("BOX",(0,0),(-1,-1),0.5,G_MID),
-    ]))
-    content.append(fact_tbl)
-    content.append(Spacer(1,8))
     content.append(Paragraph("COLORING GUIDE", S_HDR))
 
-    fr = Frame(ML, MB+1.35*inch, CW, frame_h - 1.4*inch,
+    # color guide height: 6 rows x 0.22in + 0.28in header = ~1.60in
+    GUIDE_H = 6 * 0.22 * inch + 0.28 * inch
+    guide_y = MB + GUIDE_H + 0.15 * inch   # top of guide, safely above footer
+
+    fr = Frame(ML, guide_y + 0.08*inch, CW,
+               H - MT - (guide_y + 0.08*inch) - 0.12*inch,
                leftPadding=0, rightPadding=0, topPadding=0.1*inch,
                bottomPadding=0, showBoundary=0)
     fr.addFromList(content, c)
 
-    # Color guide at bottom
-    guide_y = MB + 1.35*inch
     draw_color_guide(c, ML, guide_y, CW)
 
 # ═══════════════════════════════════════════════════════════
