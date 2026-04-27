@@ -1,0 +1,87 @@
+═══════════════════════════════════════════════════════════════════════════════
+KDP METADATA — Backyard Birds of North America, Vol. 1
+═══════════════════════════════════════════════════════════════════════════════
+
+TITLE
+  Backyard Birds of North America — Vol. 1
+
+SUBTITLE
+  A Coloring & Field Guide Book: 40 Species, 120 Pages
+
+SERIES (optional)
+  Series name  : Backyard Birds of North America
+  Volume number: 1
+
+DESCRIPTION (max 4 000 characters — paste into KDP HTML editor)
+─────────────────────────────────────────────────────────────────────────────
+<h2>Color. Learn. Connect with Nature.</h2>
+
+<p><strong>Backyard Birds of North America — Volume 1</strong> combines the meditative joy of adult coloring with the depth of a real field guide. Forty of the continent's most beloved birds, each presented across three sections: two richly detailed educational pages and one full-page coloring illustration.</p>
+
+<h3>What's inside each of the 40 bird modules:</h3>
+<ul>
+  <li>Natural history profile: habitat &amp; range, diet, behavior, nesting, song, and conservation status</li>
+  <li>Quick Stats box: length, wingspan, weight, and lifespan in imperial and metric</li>
+  <li>IUCN Red List status and Breeding Bird Survey population trend data</li>
+  <li>Practical feeder &amp; garden tips for attracting the species</li>
+  <li>A color guide identifying every key plumage zone with suggested colors</li>
+  <li>A full-page coloring illustration — printed single-sided on a blank-backed page so markers never bleed through</li>
+</ul>
+
+<h3>40 featured species include:</h3>
+<p>American Goldfinch • Northern Cardinal • Black-capped Chickadee • Blue Jay • Ruby-throated Hummingbird • Eastern Bluebird • Baltimore Oriole • Cedar Waxwing • American Kestrel • Steller's Jay • Northern Flicker • Downy Woodpecker • Hermit Thrush • American Robin • Rose-breasted Grosbeak • Common Yellowthroat • and 24 more</p>
+
+<h3>Designed for:</h3>
+<ul>
+  <li>Adult colorists seeking a meaningful, nature-themed project</li>
+  <li>Backyard birders who want to deepen their knowledge of common species</li>
+  <li>Educators and naturalists looking for an engaging reference tool</li>
+  <li>Gift-givers seeking a thoughtful present for nature and art lovers</li>
+</ul>
+
+<p><strong>168 pages • 8.5 × 11 inches • Professional lay-flat binding</strong></p>
+<p>Works beautifully with colored pencils, watercolor pencils, and fine-tip markers. Each coloring page is printed on a single side with a blank reverse — no bleed-through, no worries.</p>
+─────────────────────────────────────────────────────────────────────────────
+
+7 KEYWORDS  (KDP allows up to 7 search keywords/phrases)
+  1. bird coloring book for adults
+  2. backyard birds field guide
+  3. nature coloring book adults
+  4. bird watching coloring pages
+  5. North America birds educational
+  6. wildlife coloring book gift
+  7. ornithology coloring activity book
+
+2 BISAC CATEGORIES
+  Primary  : NAT039000  NATURE / Birds & Birdwatching
+  Secondary: GAM006000  GAMES & ACTIVITIES / Coloring Books
+
+AGE RANGE
+  From: 13     To: (leave blank / adult)
+
+GRADE RANGE
+  Leave blank (adult title)
+
+PRINT SETTINGS (KDP Paperback)
+  Interior type    : Black & White
+  Paper color      : Cream (60# / 90 gsm)  — recommended for coloring books
+  Trim size        : 8.5 × 11 in  (21.59 × 27.94 cm)
+  Bleed            : Yes (0.125 in / 3.175 mm on all sides)
+  Cover finish     : Matte  (recommended — gloss can show fingerprints on dark covers)
+
+PRICING GUIDANCE
+  Minimum print cost (168pp B&W cream, US): ~$4.45  (verify in KDP calculator)
+  Suggested list price:
+    US  : $17.99   (royalty ≈ $5.34 at 60% after print cost)
+    UK  : £14.99
+    EU  : €15.99
+    CA  : $22.99
+
+FILES TO UPLOAD
+  Interior : interior_final.pdf   (168 pages, letter, with bleed)
+  Cover    : cover_kdp.pdf        (17.629 × 11.25 in, with bleed & spine)
+
+SPINE WIDTH (for cover template reference)
+  168 pages × 0.002252 in/page (60# cream) = 0.379 in  (9.63 mm)
+
+═══════════════════════════════════════════════════════════════════════════════
