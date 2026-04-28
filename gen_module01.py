@@ -62,7 +62,7 @@ def page_chrome(c, page_num, subtitle=""):
     # bottom band
     c.setFillColor(G_DARK); c.rect(0,0,W,MB,fill=1,stroke=0)
     c.setFillColor(CREAM);  c.setFont("Helvetica",8)
-    c.drawCentredString(W/2, 0.16*inch, f"— {page_num} —")
+    c.drawCentredString(W/2, 0.35*inch, f"— {page_num} —")
 
 # ── Stats box (4 stats in 2 columns)
 def draw_stats(c, x, y, bw):
@@ -287,9 +287,9 @@ def page3(c):
     FTR_H = 0.45*inch
     c.setFillColor(G_DARK); c.rect(0,0,W,FTR_H,fill=1,stroke=0)
     c.setFillColor(GOLD);   c.setFont("Helvetica-Bold",7.5)
-    c.drawString(ML, 0.16*inch, "Backyard Birds of North America  •  Vol. 1")
+    c.drawString(ML, 0.35*inch, "Backyard Birds of North America  •  Vol. 1")
     c.setFillColor(CREAM);  c.setFont("Helvetica",7.5)
-    c.drawRightString(W-MR, 0.16*inch, "Page 3")
+    c.drawRightString(W-MR, 0.35*inch, "Page 3")
     # image — max available space
     pad = 0.18*inch
     img_x = ML - pad

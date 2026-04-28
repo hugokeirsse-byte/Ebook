@@ -50,7 +50,7 @@ def chrome(c, pnum, sub=""):
     c.setFillColor(CREAM); c.rect(0,0,W,H-MT,fill=1,stroke=0)
     c.setFillColor(G_DARK); c.rect(0,0,W,MB,fill=1,stroke=0)
     c.setFillColor(CREAM); c.setFont("Helvetica",8)
-    c.drawCentredString(W/2,0.28*inch,f"— {pnum} —")
+    c.drawCentredString(W/2,0.35*inch,f"— {pnum} —")
 
 def draw_stats(c, x, y, bw):
     stats=[("Length","9.8 – 11.8 in  (25 – 30 cm)"),
@@ -184,8 +184,8 @@ def page3(c):
     c.drawCentredString(W/2,H-0.56*inch,"Blue Jay  •  Cyanocitta cristata  •  Module 03")
     FTR_H=0.45*inch
     c.setFillColor(G_DARK); c.rect(0,0,W,FTR_H,fill=1,stroke=0)
-    c.setFillColor(GOLD); c.setFont("Helvetica-Bold",7.5); c.drawString(ML,0.16*inch,"Backyard Birds of North America  •  Vol. 1")
-    c.setFillColor(CREAM); c.setFont("Helvetica",7.5); c.drawRightString(W-MR,0.16*inch,"Page 9")
+    c.setFillColor(GOLD); c.setFont("Helvetica-Bold",7.5); c.drawString(ML,0.35*inch,"Backyard Birds of North America  •  Vol. 1")
+    c.setFillColor(CREAM); c.setFont("Helvetica",7.5); c.drawRightString(W-MR,0.35*inch,"Page 9")
     pad=0.18*inch
     c.drawImage(IMG_PATH,ML-pad,FTR_H+pad,width=W-2*(ML-pad),height=H-HDR_H-FTR_H-2*pad,preserveAspectRatio=True,mask="auto")
 

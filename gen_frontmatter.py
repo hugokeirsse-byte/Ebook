@@ -182,7 +182,7 @@ def chrome_fm(c,pnum,sub=""):
     c.setFillColor(CREAM); c.rect(0,0,W,H-MT,fill=1,stroke=0)
     c.setFillColor(G_DARK); c.rect(0,0,W,MB,fill=1,stroke=0)
     c.setFillColor(CREAM); c.setFont("Helvetica",8)
-    c.drawCentredString(W/2,0.28*inch,f"— {pnum} —")
+    c.drawCentredString(W/2,0.35*inch,f"— {pnum} —")
 
 def draw_toc_page(c,pnum,entries,page_label):
     chrome_fm(c,page_label,"Table of Contents")
