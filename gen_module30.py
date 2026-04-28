@@ -50,7 +50,7 @@ def chrome(c,pnum,sub=""):
     c.setFillColor(CREAM); c.rect(0,0,W,H-MT,fill=1,stroke=0)
     c.setFillColor(G_DARK); c.rect(0,0,W,MB,fill=1,stroke=0)
     c.setFillColor(CREAM); c.setFont("Helvetica",8)
-    c.drawCentredString(W/2,0.16*inch,f"— {pnum} —")
+    c.drawCentredString(W/2,0.28*inch,f"— {pnum} —")
 
 def draw_stats(c,x,y,bw):
     stats=[("Length","8.3 – 10.2 in  (21 – 26 cm)"),

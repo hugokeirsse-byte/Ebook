@@ -2,9 +2,10 @@
 KDP full-wrap cover assembly using the provided front and back cover images.
 
 Layout (left → right):
-  [BLEED][←── BACK COVER (8.5 in) ──→][←SPINE (0.379 in)→][←── FRONT COVER (8.5 in) ──→][BLEED]
+  [BLEED][←── BACK COVER (8.5 in) ──→][←SPINE (0.420 in)→][←── FRONT COVER (8.5 in) ──→][BLEED]
 
-Total canvas: 17.629 × 11.25 in  (with 0.125 in bleed on all sides)
+Total canvas: 17.670 × 11.25 in  (with 0.125 in bleed on all sides)
+Spine: 168 pages × 0.0025 in/page (cream 60# paper) = 0.420 in
 """
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
@@ -15,7 +16,7 @@ FRONT_IMG  = "/home/user/Ebook/images/cover_front.png"
 BACK_IMG   = "/home/user/Ebook/images/cover_back.png"
 
 BLEED  = 0.125 * inch
-SPINE  = 0.379 * inch
+SPINE  = 0.420 * inch
 TRIM_W = 8.5   * inch
 TRIM_H = 11.0  * inch
 
