@@ -10,10 +10,18 @@ Spine: 168 pages × 0.0025 in/page (cream 60# paper) = 0.420 in
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
 from reportlab.lib.units import inch
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 
 OUTPUT     = "/home/user/Ebook/cover_kdp.pdf"
 FRONT_IMG  = "/home/user/Ebook/images/cover_front.png"
 BACK_IMG   = "/home/user/Ebook/images/cover_back.png"
+
+# Register Liberation Sans TTF — metrically identical to Helvetica, fully embedded
+pdfmetrics.registerFont(TTFont("LibSans-Bold",
+    "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf"))
+pdfmetrics.registerFont(TTFont("LibSans",
+    "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf"))
 
 BLEED  = 0.125 * inch
 SPINE  = 0.420 * inch
@@ -33,13 +41,11 @@ CREAM  = colors.HexColor("#FDFBF5")
 cv = canvas.Canvas(OUTPUT, pagesize=(CW, CH))
 
 # ── BACK COVER ───────────────────────────────────────────────────────────────
-# Fill from left bleed edge to spine left edge, full height
 back_w = BLEED + TRIM_W
 cv.drawImage(BACK_IMG, 0, 0, width=back_w, height=CH,
              preserveAspectRatio=False, mask="auto")
 
 # ── FRONT COVER ──────────────────────────────────────────────────────────────
-# Fill from spine right edge to right bleed edge, full height
 front_w = TRIM_W + BLEED
 cv.drawImage(FRONT_IMG, X_FRONT_LEFT, 0, width=front_w, height=CH,
              preserveAspectRatio=False, mask="auto")
@@ -53,15 +59,15 @@ cv.setStrokeColor(GOLD); cv.setLineWidth(0.6)
 cv.line(X_SPINE_LEFT, 0, X_SPINE_LEFT, CH)
 cv.line(X_SPINE_LEFT + SPINE, 0, X_SPINE_LEFT + SPINE, CH)
 
-# Spine text — rotated 90° (reads bottom to top)
+# Spine text — rotated 90° (reads bottom to top), embedded TTF fonts
 spine_cx = X_SPINE_LEFT + SPINE / 2
 spine_cy = CH / 2
 cv.saveState()
 cv.translate(spine_cx, spine_cy)
 cv.rotate(90)
-cv.setFillColor(CREAM); cv.setFont("Helvetica-Bold", 8.5)
+cv.setFillColor(CREAM); cv.setFont("LibSans-Bold", 8.5)
 cv.drawCentredString(0, 4, "BACKYARD BIRDS OF NORTH AMERICA")
-cv.setFillColor(GOLD); cv.setFont("Helvetica-Bold", 7.5)
+cv.setFillColor(GOLD); cv.setFont("LibSans-Bold", 7.5)
 cv.drawCentredString(0, -9, "VOL. 1")
 cv.restoreState()
 

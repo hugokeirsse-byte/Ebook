@@ -44,9 +44,9 @@ class GoldLine(Flowable):
 def chrome(c,pnum,sub=""):
     c.setFillColor(G_DARK); c.rect(0,H-MT,W,MT,fill=1,stroke=0)
     c.setFillColor(GOLD); c.setFont("Helvetica-Bold",7.5)
-    c.drawString(ML,H-0.32*inch,"BACKYARD BIRDS OF NORTH AMERICA  —  VOL. 1")
+    c.drawString(ML,H-0.40*inch,"BACKYARD BIRDS OF NORTH AMERICA  —  VOL. 1")
     c.setFillColor(CREAM); c.setFont("Helvetica",7.5)
-    if sub: c.drawRightString(W-MR,H-0.32*inch,sub)
+    if sub: c.drawRightString(W-MR,H-0.40*inch,sub)
     c.setFillColor(CREAM); c.rect(0,0,W,H-MT,fill=1,stroke=0)
     c.setFillColor(G_DARK); c.rect(0,0,W,MB,fill=1,stroke=0)
     c.setFillColor(CREAM); c.setFont("Helvetica",8)
@@ -190,12 +190,12 @@ def page2(c):
 
 def page3(c):
     c.setFillColor(CREAM); c.rect(0,0,W,H,fill=1,stroke=0)
-    HDR_H=0.65*inch
+    HDR_H=0.80*inch
     c.setFillColor(G_DARK); c.rect(0,H-HDR_H,W,HDR_H,fill=1,stroke=0)
     c.setFillColor(CREAM); c.setFont("Helvetica-Bold",16)
-    c.drawCentredString(W/2,H-0.38*inch,"COLOR ME!")
+    c.drawCentredString(W/2,H-0.48*inch,"COLOR ME!")
     c.setFillColor(G_LIGHT); c.setFont("Helvetica",9)
-    c.drawCentredString(W/2,H-0.56*inch,"American Crow  •  Corvus brachyrhynchos  •  Module 17")
+    c.drawCentredString(W/2,H-0.66*inch,"American Crow  •  Corvus brachyrhynchos  •  Module 17")
     FTR_H=0.45*inch
     c.setFillColor(G_DARK); c.rect(0,0,W,FTR_H,fill=1,stroke=0)
     c.setFillColor(GOLD); c.setFont("Helvetica-Bold",7.5)
