@@ -115,7 +115,7 @@ PAGE_ORDER = [
 ]
 
 print("Assembling Tiny Monsters Vol.1 interior PDF...")
-all_pages = [title_page(), copyright_page()]
+all_pages = [title_page(), copyright_page(), blank_page(), blank_page()]
 
 for i, (filename, state) in enumerate(PAGE_ORDER):
     path = os.path.join(PAGES_DIR, filename)
