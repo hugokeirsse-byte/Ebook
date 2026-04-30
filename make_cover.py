@@ -8,11 +8,11 @@ FRONT_PATH = "/root/.claude/uploads/91f55099-f56c-4f0f-be5a-e6587f3b0d81/019dd90
 BACK_PATH  = "/root/.claude/uploads/91f55099-f56c-4f0f-be5a-e6587f3b0d81/019dd90b-1000008065.png"
 OUT_PATH   = "/home/user/Ebook/cover_full.png"
 
-# KDP specs — 8.5"×8.5" square, 106 pages, white paper
+# KDP specs — 8.5"×8.5" square, 104 pages, white paper
 DPI      = 300
 PAGE_IN  = 8.5
 BLEED_IN = 0.125
-PAGES    = 106
+PAGES    = 104
 SPINE_IN = PAGES * 0.002252  # 0.2387"
 
 PAGE_PX  = round(PAGE_IN * DPI)               # 2550
