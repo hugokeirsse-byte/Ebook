@@ -9,13 +9,21 @@ OUT_PDF   = "/home/user/Ebook/TinyMonsters_Vol1_Interior.pdf"
 DPI  = 300
 W, H = 2550, 2550  # 8.5" × 8.5" square KDP
 
+# KDP minimum margins: gutter 0.375" (113px), outer/top/bottom 0.25" (75px)
+# Use 0.375" on all sides to satisfy gutter on both left and right pages
+MARGIN = round(0.375 * DPI)  # 113 px
+
 def fit_on_canvas(img, target_w=W, target_h=H):
+    safe_w = target_w - 2 * MARGIN
+    safe_h = target_h - 2 * MARGIN
     iw, ih = img.size
-    scale   = min(target_w / iw, target_h / ih)
+    scale   = min(safe_w / iw, safe_h / ih)
     nw, nh  = round(iw * scale), round(ih * scale)
     resized = img.resize((nw, nh), Image.LANCZOS)
     canvas  = Image.new("RGB", (target_w, target_h), "white")
-    canvas.paste(resized, ((target_w - nw) // 2, (target_h - nh) // 2))
+    paste_x = MARGIN + (safe_w - nw) // 2
+    paste_y = MARGIN + (safe_h - nh) // 2
+    canvas.paste(resized, (paste_x, paste_y))
     return canvas
 
 def blank_page():
