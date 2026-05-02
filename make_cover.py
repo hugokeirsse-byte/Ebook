@@ -27,10 +27,10 @@ print(f"Canvas : {W}×{H}px  ({W/DPI:.3f}\"×{H/DPI:.3f}\")")
 print(f"Spine  : {SPINE_PX}px = {SPINE_IN:.4f}\" ({PAGES} pages)")
 
 
-def fill_panel(img, panel_w, panel_h):
-    """Scale image to fill the panel, keeping aspect ratio, white background for any gap."""
+def fit_panel(img, panel_w, panel_h):
+    """Scale image to fit entirely inside the panel — no cropping, white background for gap."""
     iw, ih = img.size
-    scale  = max(panel_w / iw, panel_h / ih)
+    scale  = min(panel_w / iw, panel_h / ih)
     nw, nh = round(iw * scale), round(ih * scale)
     resized = img.resize((nw, nh), Image.LANCZOS)
     panel = Image.new("RGB", (panel_w, panel_h), "white")
@@ -38,9 +38,9 @@ def fill_panel(img, panel_w, panel_h):
     return panel
 
 
-# Fill each panel entirely — cover image goes edge to edge (includes bleed)
-front = fill_panel(Image.open(FRONT_PATH).convert("RGB"), FRONT_W, H)
-back  = fill_panel(Image.open(BACK_PATH).convert("RGB"),  BACK_W,  H)
+# Fit each panel — image fully visible, no cropping
+front = fit_panel(Image.open(FRONT_PATH).convert("RGB"), FRONT_W, H)
+back  = fit_panel(Image.open(BACK_PATH).convert("RGB"),  BACK_W,  H)
 
 # Sample spine gradient from front cover left edge
 top_col = front.getpixel((5, 10))
