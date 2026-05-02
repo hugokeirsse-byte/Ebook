@@ -6,67 +6,79 @@ FONT_REG  = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
 PAGES_DIR = "/home/user/Ebook/pages"
 OUT_PDF   = "/home/user/Ebook/TinyMonsters_Vol1_Interior.pdf"
 
-DPI  = 300
-W, H = 2550, 2550  # 8.5" × 8.5" square KDP
+DPI     = 300
+W_TRIM  = round(8.5   * DPI)    # 2550px — trim size
+H_TRIM  = round(8.5   * DPI)    # 2550px
+BLEED   = round(0.125 * DPI)    # 38px  — KDP required bleed each side
+W       = W_TRIM + 2 * BLEED    # 2626px — canvas with bleed
+H       = H_TRIM + 2 * BLEED    # 2626px
+MARGIN  = round(0.375 * DPI)    # 113px — safe zone from trim edge
 
-# KDP minimum margins: gutter 0.375" (113px), outer/top/bottom 0.25" (75px)
-# Use 0.375" on all sides to satisfy gutter on both left and right pages
-MARGIN = round(0.375 * DPI)  # 113 px
 
-def fit_on_canvas(img, target_w=W, target_h=H):
-    safe_w = target_w - 2 * MARGIN
-    safe_h = target_h - 2 * MARGIN
-    iw, ih = img.size
-    scale   = min(safe_w / iw, safe_h / ih)
-    nw, nh  = round(iw * scale), round(ih * scale)
-    resized = img.resize((nw, nh), Image.LANCZOS)
-    canvas  = Image.new("RGB", (target_w, target_h), "white")
-    paste_x = MARGIN + (safe_w - nw) // 2
-    paste_y = MARGIN + (safe_h - nh) // 2
-    canvas.paste(resized, (paste_x, paste_y))
+def with_bleed(trim_img):
+    """Wrap a trim-size image in a white bleed canvas."""
+    canvas = Image.new("RGB", (W, H), "white")
+    canvas.paste(trim_img, (BLEED, BLEED))
     return canvas
+
+
+def fit_on_canvas(img):
+    safe_w = W_TRIM - 2 * MARGIN
+    safe_h = H_TRIM - 2 * MARGIN
+    iw, ih = img.size
+    scale  = min(safe_w / iw, safe_h / ih)
+    nw, nh = round(iw * scale), round(ih * scale)
+    resized = img.resize((nw, nh), Image.LANCZOS)
+    trim = Image.new("RGB", (W_TRIM, H_TRIM), "white")
+    trim.paste(resized, (MARGIN + (safe_w - nw) // 2,
+                         MARGIN + (safe_h - nh) // 2))
+    return with_bleed(trim)
+
 
 def blank_page():
     return Image.new("RGB", (W, H), "white")
 
+
 def title_page():
-    img  = Image.new("RGB", (W, H), "white")
-    draw = ImageDraw.Draw(img)
-    cx   = W // 2
+    trim = Image.new("RGB", (W_TRIM, H_TRIM), "white")
+    draw = ImageDraw.Draw(trim)
+    cx   = W_TRIM // 2
     fn_t = ImageFont.truetype(FONT_BOLD, 185)
     fn_s = ImageFont.truetype(FONT_REG,  90)
     fn_v = ImageFont.truetype(FONT_BOLD, 120)
     fn_a = ImageFont.truetype(FONT_REG,  80)
 
-    draw.text((cx, 520),  "TINY MONSTERS",         fill="black", font=fn_t, anchor="mt")
-    draw.line([(280, 800), (W-280, 800)],            fill="black", width=7)
-    draw.text((cx, 850),  "Cryptids of the USA",    fill="black", font=fn_s, anchor="mt")
-    draw.text((cx, 990),  "Vol. 1",                 fill="black", font=fn_v, anchor="mt")
-    draw.line([(280, 1190), (W-280, 1190)],          fill="black", width=7)
-    draw.text((cx, 1780), "A Kawaii Coloring Book",  fill="black", font=fn_s, anchor="mt")
-    draw.text((cx, 2200), "Mimi Doodle",             fill="black", font=fn_a, anchor="mt")
-    return img
+    draw.text((cx, 520),  "TINY MONSTERS",          fill="black", font=fn_t, anchor="mt")
+    draw.line([(280, 800), (W_TRIM-280, 800)],        fill="black", width=7)
+    draw.text((cx, 850),  "Cryptids of the USA",     fill="black", font=fn_s, anchor="mt")
+    draw.text((cx, 990),  "Vol. 1",                  fill="black", font=fn_v, anchor="mt")
+    draw.line([(280, 1190), (W_TRIM-280, 1190)],      fill="black", width=7)
+    draw.text((cx, 1780), "A Kawaii Coloring Book",   fill="black", font=fn_s, anchor="mt")
+    draw.text((cx, 2200), "Mimi Doodle",              fill="black", font=fn_a, anchor="mt")
+    return with_bleed(trim)
+
 
 def copyright_page():
-    img  = Image.new("RGB", (W, H), "white")
-    draw = ImageDraw.Draw(img)
-    cx   = W // 2
+    trim = Image.new("RGB", (W_TRIM, H_TRIM), "white")
+    draw = ImageDraw.Draw(trim)
+    cx   = W_TRIM // 2
     fn   = ImageFont.truetype(FONT_REG, 58)
     fn2  = ImageFont.truetype(FONT_REG, 44)
 
     entries = [
-        (fn,  "Tiny Monsters: Cryptids of the USA — Vol. 1",         500),
-        (fn,  "© 2025 Mimi Doodle. All rights reserved.",            595),
+        (fn,  "Tiny Monsters: Cryptids of the USA — Vol. 1",          500),
+        (fn,  "© 2025 Mimi Doodle. All rights reserved.",             595),
         (fn2, "No part of this book may be reproduced or distributed", 760),
-        (fn2, "in any form without prior written permission.",        815),
-        (fn2, "Illustrations created with AI-assisted artwork.",      920),
-        (fn2, "First published 2025.",                                1025),
-        (fn2, "Printed in the United States of America.",            1080),
-        (fn2, "Published independently via Amazon KDP.",             1185),
+        (fn2, "in any form without prior written permission.",         815),
+        (fn2, "Illustrations created with AI-assisted artwork.",       920),
+        (fn2, "First published 2025.",                                 1025),
+        (fn2, "Printed in the United States of America.",             1080),
+        (fn2, "Published independently via Amazon KDP.",              1185),
     ]
     for f, text, y in entries:
         draw.text((cx, y), text, fill="black", font=f, anchor="mt")
-    return img
+    return with_bleed(trim)
+
 
 # Correct alphabetical order — file → state label
 PAGE_ORDER = [
@@ -123,6 +135,8 @@ PAGE_ORDER = [
 ]
 
 print("Assembling Tiny Monsters Vol.1 interior PDF...")
+print(f"Page size : {W}×{H}px ({W/DPI:.3f}\"×{H/DPI:.3f}\") — includes {BLEED}px bleed each side")
+
 all_pages = [title_page(), copyright_page(), blank_page(), blank_page()]
 
 for i, (filename, state) in enumerate(PAGE_ORDER):
