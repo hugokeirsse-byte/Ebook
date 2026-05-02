@@ -23,17 +23,36 @@ BACK_W   = PAGE_PX + BLEED_PX                 # 2588
 FRONT_W  = PAGE_PX + BLEED_PX                 # 2588
 W        = BACK_W + SPINE_PX + FRONT_W        # 5248
 
+SAFE_PX = round(0.375 * DPI) + BLEED_PX  # 151px — safe zone from canvas edge
+
 print(f"Canvas : {W}×{H}px  ({W/DPI:.3f}\"×{H/DPI:.3f}\")")
 print(f"Spine  : {SPINE_PX}px = {SPINE_IN:.4f}\" ({PAGES} pages)")
+print(f"Safe   : {SAFE_PX}px from canvas edge on front/back panels")
 
-# Load and resize to their panel sizes
-front = Image.open(FRONT_PATH).convert("RGB").resize((FRONT_W, H), Image.LANCZOS)
-back  = Image.open(BACK_PATH).convert("RGB").resize((BACK_W,  H), Image.LANCZOS)
 
-# Sample spine gradient from front cover left edge (faces the spine)
-top_col = front.getpixel((5, 10))
-mid_col = front.getpixel((5, H // 3))
-bot_col = front.getpixel((5, H * 2 // 3))
+def fit_panel(img, panel_w, panel_h):
+    """Scale image to fit within the safe zone of a cover panel, white border around it."""
+    safe_w = panel_w - 2 * SAFE_PX
+    safe_h = panel_h - 2 * SAFE_PX
+    iw, ih = img.size
+    scale  = min(safe_w / iw, safe_h / ih)
+    nw, nh = round(iw * scale), round(ih * scale)
+    resized = img.resize((nw, nh), Image.LANCZOS)
+    panel = Image.new("RGB", (panel_w, panel_h), "white")
+    panel.paste(resized, (SAFE_PX + (safe_w - nw) // 2,
+                          SAFE_PX + (safe_h - nh) // 2))
+    return panel
+
+
+# Load and fit inside safe zone — white border guarantees KDP margin compliance
+front = fit_panel(Image.open(FRONT_PATH).convert("RGB"), FRONT_W, H)
+back  = fit_panel(Image.open(BACK_PATH).convert("RGB"),  BACK_W,  H)
+
+# Sample spine gradient from inside the safe zone of the front panel
+sx = SAFE_PX + 5
+top_col = front.getpixel((sx, SAFE_PX + 10))
+mid_col = front.getpixel((sx, H // 2))
+bot_col = front.getpixel((sx, H - SAFE_PX - 10))
 
 # Build canvas
 canvas = Image.new("RGB", (W, H), (255, 255, 255))
