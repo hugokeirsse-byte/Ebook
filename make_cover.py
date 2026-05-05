@@ -52,7 +52,7 @@ RAINBOW = [
     (160,  60, 255),   # violet
 ]
 
-BORDER = round(0.65 * DPI)   # 195px — thick enough to cover baked-in text
+BORDER = round(0.28 * DPI)   # 84px — just enough to cover baked-in text
 
 
 def rainbow_color(t):
