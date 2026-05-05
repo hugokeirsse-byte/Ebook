@@ -43,39 +43,54 @@ def fill_panel(img, panel_w, panel_h):
     return panel
 
 
-def apply_author_gradient(panel, name):
-    """Dark gradient vignette at bottom — covers old name, author name drawn on top."""
-    w, h  = panel.size
-    grad_h = round(1.0 * DPI)          # gradient height: 1 inch
-    grad_top = h - grad_h
+RAINBOW = [
+    (255,  60,  60),   # red
+    (255, 160,   0),   # orange
+    (255, 230,   0),   # yellow
+    ( 60, 200,  80),   # green
+    ( 40, 130, 255),   # blue
+    (160,  60, 255),   # violet
+]
 
-    # Build semi-transparent black gradient overlay
-    overlay = Image.new("RGBA", (w, h), (0, 0, 0, 0))
-    ov_draw = ImageDraw.Draw(overlay)
-    for row in range(grad_top, h):
-        alpha = int(200 * (row - grad_top) / grad_h)   # 0 → 200
-        ov_draw.line([(0, row), (w, row)], fill=(0, 0, 0, alpha))
+def apply_rainbow_banner(panel, name):
+    """Draw a rainbow banner that covers the old baked-in author name."""
+    w, h   = panel.size
+    bh     = round(0.55 * DPI)          # banner height ≈ 0.55"
+    margin = round(0.15 * DPI)          # gap above safe-zone bottom
+    by     = h - SAFE - margin          # banner center y
 
-    # Composite onto panel
-    base = panel.convert("RGBA")
-    merged = Image.alpha_composite(base, overlay).convert("RGB")
-    panel.paste(merged)
+    banner_top = by - bh // 2
+    banner_bot = by + bh // 2
 
-    # Author name in white, centered, within safe zone
+    # Draw rainbow gradient column by column
     draw = ImageDraw.Draw(panel)
-    fn   = ImageFont.truetype(FONT_BOLD, 72)
-    cx   = w // 2
-    y    = h - SAFE - round(0.15 * DPI)   # well inside safe zone
-    draw.text((cx, y), name, fill=(255, 255, 255), font=fn, anchor="mm")
+    n = len(RAINBOW) - 1
+    for x in range(w):
+        t   = x / (w - 1) * n
+        i   = min(int(t), n - 1)
+        f   = t - i
+        c1, c2 = RAINBOW[i], RAINBOW[i + 1]
+        col = tuple(round(c1[j] + (c2[j] - c1[j]) * f) for j in range(3))
+        draw.line([(x, banner_top), (x, banner_bot)], fill=col)
+
+    # Author name centered on banner — dark text + white outline for readability
+    fn = ImageFont.truetype(FONT_BOLD, round(bh * 0.55))
+    cx = w // 2
+    stroke = 3
+    for dx in range(-stroke, stroke + 1):
+        for dy in range(-stroke, stroke + 1):
+            if dx != 0 or dy != 0:
+                draw.text((cx + dx, by + dy), name, fill=(255,255,255), font=fn, anchor="mm")
+    draw.text((cx, by), name, fill=(20, 20, 20), font=fn, anchor="mm")
 
 
 # Load and fill panels
 front = fill_panel(Image.open(FRONT_PATH).convert("RGB"), FRONT_W, H)
 back  = fill_panel(Image.open(BACK_PATH).convert("RGB"),  BACK_W,  H)
 
-# Apply gradient + new author name on both panels
+# Apply rainbow banner + new author name on both panels
 for panel in (front, back):
-    apply_author_gradient(panel, AUTHOR)
+    apply_rainbow_banner(panel, AUTHOR)
 
 # Sample spine gradient from front cover left edge (inside content)
 top_col = front.getpixel((5, SAFE + 20))
