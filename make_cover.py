@@ -110,27 +110,16 @@ back  = fill_panel(Image.open(BACK_PATH).convert("RGB"),  BACK_W,  H)
 for panel in (front, back):
     apply_rainbow_frame(panel, AUTHOR)
 
-# Sample spine gradient from front cover left edge (inside content)
-top_col = front.getpixel((5, SAFE + 20))
-mid_col = front.getpixel((5, H // 2))
-bot_col = front.getpixel((5, H - SAFE - 20))
-
 # Build canvas
 canvas = Image.new("RGB", (W, H), (255, 255, 255))
 canvas.paste(back,  (0, 0))
 canvas.paste(front, (BACK_W + SPINE_PX, 0))
 
-# Build spine gradient
+# Spine — rainbow gradient top → bottom (matches frame on front/back)
 spine_arr = np.zeros((H, SPINE_PX, 3), dtype=np.uint8)
 for i in range(H):
-    t = i / (H - 1)
-    if t < 0.5:
-        t2 = t * 2
-        c = [int(top_col[j]*(1-t2) + mid_col[j]*t2) for j in range(3)]
-    else:
-        t2 = (t - 0.5) * 2
-        c = [int(mid_col[j]*(1-t2) + bot_col[j]*t2) for j in range(3)]
-    spine_arr[i, :] = c
+    col = rainbow_color(i / (H - 1))
+    spine_arr[i, :] = col
 canvas.paste(Image.fromarray(spine_arr), (BACK_W, 0))
 
 # Spine text
