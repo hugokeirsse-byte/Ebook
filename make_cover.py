@@ -8,29 +8,34 @@ FRONT_PATH = "/root/.claude/uploads/91f55099-f56c-4f0f-be5a-e6587f3b0d81/019dd90
 BACK_PATH  = "/root/.claude/uploads/91f55099-f56c-4f0f-be5a-e6587f3b0d81/019dd90b-1000008065.png"
 OUT_PATH   = "/home/user/Ebook/cover_full.png"
 
+AUTHOR     = "Lumi Doodle"
+
 # KDP specs — 8.5"×8.5" square, 104 pages, white paper
 DPI      = 300
 PAGE_IN  = 8.5
 BLEED_IN = 0.125
 PAGES    = 104
-SPINE_IN = PAGES * 0.002252  # 0.2387"
+SPINE_IN = PAGES * 0.002252
 
 PAGE_PX  = round(PAGE_IN * DPI)               # 2550
 BLEED_PX = round(BLEED_IN * DPI)              # 38
-SPINE_PX = max(1, round(SPINE_IN * DPI))      # 72
+SPINE_PX = max(1, round(SPINE_IN * DPI))      # 70
 H        = round((PAGE_IN + 2*BLEED_IN)*DPI)  # 2625
 BACK_W   = PAGE_PX + BLEED_PX                 # 2588
 FRONT_W  = PAGE_PX + BLEED_PX                 # 2588
-W        = BACK_W + SPINE_PX + FRONT_W        # 5248
+W        = BACK_W + SPINE_PX + FRONT_W
+
+# Safe zone: 0.375" from trim = 113px; + 38px bleed = 151px from canvas edge
+SAFE     = BLEED_PX + round(0.375 * DPI)      # 151px from panel edge
 
 print(f"Canvas : {W}×{H}px  ({W/DPI:.3f}\"×{H/DPI:.3f}\")")
 print(f"Spine  : {SPINE_PX}px = {SPINE_IN:.4f}\" ({PAGES} pages)")
 
 
-def fit_panel(img, panel_w, panel_h):
-    """Scale image to fit entirely inside the panel — no cropping, white background for gap."""
+def fill_panel(img, panel_w, panel_h):
+    """Scale image to fill entire panel edge-to-edge (satisfies bleed requirement)."""
     iw, ih = img.size
-    scale  = min(panel_w / iw, panel_h / ih)
+    scale  = max(panel_w / iw, panel_h / ih)
     nw, nh = round(iw * scale), round(ih * scale)
     resized = img.resize((nw, nh), Image.LANCZOS)
     panel = Image.new("RGB", (panel_w, panel_h), "white")
@@ -38,21 +43,63 @@ def fit_panel(img, panel_w, panel_h):
     return panel
 
 
-# Fit each panel — image fully visible, no cropping
-front = fit_panel(Image.open(FRONT_PATH).convert("RGB"), FRONT_W, H)
-back  = fit_panel(Image.open(BACK_PATH).convert("RGB"),  BACK_W,  H)
+def sample_bg_color(panel, y, n_samples=20):
+    """Sample and average background color across a horizontal strip."""
+    w = panel.width
+    r = g = b = 0
+    for i in range(n_samples):
+        x = int(w * i / n_samples)
+        c = panel.getpixel((x, y))
+        r += c[0]; g += c[1]; b += c[2]
+    return (r // n_samples, g // n_samples, b // n_samples)
 
-# Sample spine gradient from front cover left edge
-top_col = front.getpixel((5, 10))
+
+def erase_old_author(panel):
+    """Cover the bottom strip (where old baked-in author name sits)."""
+    draw = ImageDraw.Draw(panel)
+    strip_top = H - round(0.6 * DPI)   # erase bottom 0.6" of panel
+    # Sample background color just above the strip
+    bg = sample_bg_color(panel, strip_top - 20)
+    draw.rectangle([(0, strip_top), (panel.width, H)], fill=bg)
+
+
+def draw_author(panel, name):
+    """Draw author name with white fill + black outline at the safe position."""
+    draw  = ImageDraw.Draw(panel)
+    fn    = ImageFont.truetype(FONT_BOLD, 72)
+    cx    = panel.width // 2
+    # Center text 0.55" from bottom trim = SAFE + 52px from bottom
+    y     = H - SAFE - round(0.18 * DPI)
+    stroke = 4
+    # Black outline
+    for dx in range(-stroke, stroke + 1):
+        for dy in range(-stroke, stroke + 1):
+            if dx != 0 or dy != 0:
+                draw.text((cx + dx, y + dy), name, fill=(20, 20, 20), font=fn, anchor="mm")
+    # White text
+    draw.text((cx, y), name, fill=(255, 255, 255), font=fn, anchor="mm")
+
+
+# Load and fill panels
+front = fill_panel(Image.open(FRONT_PATH).convert("RGB"), FRONT_W, H)
+back  = fill_panel(Image.open(BACK_PATH).convert("RGB"),  BACK_W,  H)
+
+# Cover old author name and draw new one on both panels
+for panel in (front, back):
+    erase_old_author(panel)
+    draw_author(panel, AUTHOR)
+
+# Sample spine gradient from front cover left edge (inside content)
+top_col = front.getpixel((5, SAFE + 20))
 mid_col = front.getpixel((5, H // 2))
-bot_col = front.getpixel((5, H - 10))
+bot_col = front.getpixel((5, H - SAFE - 20))
 
 # Build canvas
 canvas = Image.new("RGB", (W, H), (255, 255, 255))
 canvas.paste(back,  (0, 0))
 canvas.paste(front, (BACK_W + SPINE_PX, 0))
 
-# Build spine gradient (numpy row-fill)
+# Build spine gradient
 spine_arr = np.zeros((H, SPINE_PX, 3), dtype=np.uint8)
 for i in range(H):
     t = i / (H - 1)
@@ -65,7 +112,7 @@ for i in range(H):
     spine_arr[i, :] = c
 canvas.paste(Image.fromarray(spine_arr), (BACK_W, 0))
 
-# Spine text — draw horizontally, then rotate -90° (reads top→bottom, US convention)
+# Spine text
 TITLE_SZ  = min(44, SPINE_PX - 12)
 AUTHOR_SZ = min(28, SPINE_PX - 26)
 fn = ImageFont.truetype(FONT_BOLD, TITLE_SZ)
@@ -76,7 +123,7 @@ td  = ImageDraw.Draw(txt)
 cx  = H // 2
 cy  = SPINE_PX // 2
 td.text((cx, cy - 2), "TINY MONSTERS", fill="white", font=fn, anchor="mb")
-td.text((cx, cy + 2), "Lumi Doodle",   fill="white", font=fs, anchor="mt")
+td.text((cx, cy + 2), AUTHOR,          fill="white", font=fs, anchor="mt")
 
 txt_rot = txt.rotate(-90, expand=True)
 canvas.paste(txt_rot, (BACK_W, 0), txt_rot)
