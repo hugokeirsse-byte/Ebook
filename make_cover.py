@@ -43,40 +43,29 @@ def fill_panel(img, panel_w, panel_h):
     return panel
 
 
-def sample_bg_color(panel, y, n_samples=20):
-    """Sample and average background color across a horizontal strip."""
-    w = panel.width
-    r = g = b = 0
-    for i in range(n_samples):
-        x = int(w * i / n_samples)
-        c = panel.getpixel((x, y))
-        r += c[0]; g += c[1]; b += c[2]
-    return (r // n_samples, g // n_samples, b // n_samples)
+def apply_author_gradient(panel, name):
+    """Dark gradient vignette at bottom — covers old name, author name drawn on top."""
+    w, h  = panel.size
+    grad_h = round(1.0 * DPI)          # gradient height: 1 inch
+    grad_top = h - grad_h
 
+    # Build semi-transparent black gradient overlay
+    overlay = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    ov_draw = ImageDraw.Draw(overlay)
+    for row in range(grad_top, h):
+        alpha = int(200 * (row - grad_top) / grad_h)   # 0 → 200
+        ov_draw.line([(0, row), (w, row)], fill=(0, 0, 0, alpha))
 
-def erase_old_author(panel):
-    """Cover the bottom strip (where old baked-in author name sits)."""
+    # Composite onto panel
+    base = panel.convert("RGBA")
+    merged = Image.alpha_composite(base, overlay).convert("RGB")
+    panel.paste(merged)
+
+    # Author name in white, centered, within safe zone
     draw = ImageDraw.Draw(panel)
-    strip_top = H - round(0.6 * DPI)   # erase bottom 0.6" of panel
-    # Sample background color just above the strip
-    bg = sample_bg_color(panel, strip_top - 20)
-    draw.rectangle([(0, strip_top), (panel.width, H)], fill=bg)
-
-
-def draw_author(panel, name):
-    """Draw author name with white fill + black outline at the safe position."""
-    draw  = ImageDraw.Draw(panel)
-    fn    = ImageFont.truetype(FONT_BOLD, 72)
-    cx    = panel.width // 2
-    # Center text 0.55" from bottom trim = SAFE + 52px from bottom
-    y     = H - SAFE - round(0.18 * DPI)
-    stroke = 4
-    # Black outline
-    for dx in range(-stroke, stroke + 1):
-        for dy in range(-stroke, stroke + 1):
-            if dx != 0 or dy != 0:
-                draw.text((cx + dx, y + dy), name, fill=(20, 20, 20), font=fn, anchor="mm")
-    # White text
+    fn   = ImageFont.truetype(FONT_BOLD, 72)
+    cx   = w // 2
+    y    = h - SAFE - round(0.15 * DPI)   # well inside safe zone
     draw.text((cx, y), name, fill=(255, 255, 255), font=fn, anchor="mm")
 
 
@@ -84,10 +73,9 @@ def draw_author(panel, name):
 front = fill_panel(Image.open(FRONT_PATH).convert("RGB"), FRONT_W, H)
 back  = fill_panel(Image.open(BACK_PATH).convert("RGB"),  BACK_W,  H)
 
-# Cover old author name and draw new one on both panels
+# Apply gradient + new author name on both panels
 for panel in (front, back):
-    erase_old_author(panel)
-    draw_author(panel, AUTHOR)
+    apply_author_gradient(panel, AUTHOR)
 
 # Sample spine gradient from front cover left edge (inside content)
 top_col = front.getpixel((5, SAFE + 20))
