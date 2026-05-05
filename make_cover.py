@@ -76,7 +76,7 @@ td  = ImageDraw.Draw(txt)
 cx  = H // 2
 cy  = SPINE_PX // 2
 td.text((cx, cy - 2), "TINY MONSTERS", fill="white", font=fn, anchor="mb")
-td.text((cx, cy + 2), "Mimi Doodle",   fill="white", font=fs, anchor="mt")
+td.text((cx, cy + 2), "Lumi Doodle",   fill="white", font=fs, anchor="mt")
 
 txt_rot = txt.rotate(-90, expand=True)
 canvas.paste(txt_rot, (BACK_W, 0), txt_rot)

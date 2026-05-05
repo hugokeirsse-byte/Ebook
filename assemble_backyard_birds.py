@@ -56,7 +56,7 @@ def title_page():
     draw.text((cx, 990),  "Vol. 1",                  fill="black", font=fn_v, anchor="mt")
     draw.line([(280, 1190), (W_TRIM-280, 1190)],      fill="black", width=7)
     draw.text((cx, 1780), "A Kawaii Coloring Book",  fill="black", font=fn_s, anchor="mt")
-    draw.text((cx, 2200), "Mimi Doodle",             fill="black", font=fn_a, anchor="mt")
+    draw.text((cx, 2200), "Lumi Doodle",             fill="black", font=fn_a, anchor="mt")
     return with_bleed(trim)
 
 
@@ -70,7 +70,7 @@ def copyright_page():
     # TODO: update book title in first line to match your book
     entries = [
         (fn,  "Backyard Birds: Birds of North America — Vol. 1",          500),
-        (fn,  "© 2025 Mimi Doodle. All rights reserved.",                 595),
+        (fn,  "© 2025 Lumi Doodle. All rights reserved.",                 595),
         (fn2, "No part of this book may be reproduced or distributed",    760),
         (fn2, "in any form without prior written permission.",            815),
         (fn2, "Illustrations created with AI-assisted artwork.",          920),
