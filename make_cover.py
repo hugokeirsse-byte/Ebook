@@ -52,45 +52,63 @@ RAINBOW = [
     (160,  60, 255),   # violet
 ]
 
-def apply_rainbow_banner(panel, name):
-    """Draw a rainbow banner that covers the old baked-in author name."""
-    w, h   = panel.size
-    bh     = round(0.55 * DPI)          # banner height ≈ 0.55"
-    margin = round(0.15 * DPI)          # gap above safe-zone bottom
-    by     = h - SAFE - margin          # banner center y
+BORDER = round(0.65 * DPI)   # 195px — thick enough to cover baked-in text
 
-    banner_top = by - bh // 2
-    banner_bot = by + bh // 2
 
-    # Draw rainbow gradient column by column
-    draw = ImageDraw.Draw(panel)
+def rainbow_color(t):
+    """Return rainbow color for t in [0,1]."""
     n = len(RAINBOW) - 1
-    for x in range(w):
-        t   = x / (w - 1) * n
-        i   = min(int(t), n - 1)
-        f   = t - i
-        c1, c2 = RAINBOW[i], RAINBOW[i + 1]
-        col = tuple(round(c1[j] + (c2[j] - c1[j]) * f) for j in range(3))
-        draw.line([(x, banner_top), (x, banner_bot)], fill=col)
+    pos = t * n
+    i = min(int(pos), n - 1)
+    f = pos - i
+    c1, c2 = RAINBOW[i], RAINBOW[i + 1]
+    return tuple(round(c1[j] + (c2[j] - c1[j]) * f) for j in range(3))
 
-    # Author name centered on banner — dark text + white outline for readability
-    fn = ImageFont.truetype(FONT_BOLD, round(bh * 0.55))
+
+def apply_rainbow_frame(panel, name):
+    """Draw rainbow border frame around panel, covering old baked-in author name."""
+    w, h = panel.size
+    draw = ImageDraw.Draw(panel)
+
+    # Top strip — gradient left → right
+    for x in range(w):
+        col = rainbow_color(x / (w - 1))
+        draw.line([(x, 0), (x, BORDER)], fill=col)
+
+    # Bottom strip — gradient left → right
+    for x in range(w):
+        col = rainbow_color(x / (w - 1))
+        draw.line([(x, h - BORDER), (x, h)], fill=col)
+
+    # Left strip — gradient top → bottom
+    for y in range(BORDER, h - BORDER):
+        col = rainbow_color(y / (h - 1))
+        draw.line([(0, y), (BORDER, y)], fill=col)
+
+    # Right strip — gradient top → bottom
+    for y in range(BORDER, h - BORDER):
+        col = rainbow_color(y / (h - 1))
+        draw.line([(w - BORDER, y), (w, y)], fill=col)
+
+    # Author name just above the bottom border, inside the image
+    fn = ImageFont.truetype(FONT_BOLD, 72)
     cx = w // 2
+    y  = h - BORDER - round(0.25 * DPI)
     stroke = 3
     for dx in range(-stroke, stroke + 1):
         for dy in range(-stroke, stroke + 1):
             if dx != 0 or dy != 0:
-                draw.text((cx + dx, by + dy), name, fill=(255,255,255), font=fn, anchor="mm")
-    draw.text((cx, by), name, fill=(20, 20, 20), font=fn, anchor="mm")
+                draw.text((cx+dx, y+dy), name, fill=(255,255,255), font=fn, anchor="mm")
+    draw.text((cx, y), name, fill=(20, 20, 20), font=fn, anchor="mm")
 
 
 # Load and fill panels
 front = fill_panel(Image.open(FRONT_PATH).convert("RGB"), FRONT_W, H)
 back  = fill_panel(Image.open(BACK_PATH).convert("RGB"),  BACK_W,  H)
 
-# Apply rainbow banner + new author name on both panels
+# Apply rainbow frame + author name on both panels
 for panel in (front, back):
-    apply_rainbow_banner(panel, AUTHOR)
+    apply_rainbow_frame(panel, AUTHOR)
 
 # Sample spine gradient from front cover left edge (inside content)
 top_col = front.getpixel((5, SAFE + 20))
