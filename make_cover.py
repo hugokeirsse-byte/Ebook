@@ -16,10 +16,10 @@ VOL     = "Vol. 1"
 TAG     = "A Kawaii Coloring Book"
 AUTHOR  = "Lumi Doodle"
 
-# 2 sample pages to preview on back cover
+# 2 sample pages to preview on back cover (full paths)
 SAMPLES = [
-    "Monster_11.png",   # Hawaii
-    "Monster_42.png",   # Texas
+    "/home/user/Ebook/MonsterFamilies/pages/Baby_15_JackOLantern_x_Wraith.jpg",
+    "/home/user/Ebook/pages/Monster_47.png",   # Mothman
 ]
 
 DPI      = 300
@@ -132,15 +132,13 @@ def build_back(img):
     grid_w = 2 * thumb + gap
     grid_h = thumb
     gx = (BACK_W - grid_w) // 2
-    gy = H // 2 - grid_h // 2 + 100   # centered vertically, slightly low
+    gy = SAFE + 60   # thumbnails near top so back cover characters remain visible
 
-    for idx, filename in enumerate(SAMPLES):
-        row = 0
+    for idx, path in enumerate(SAMPLES):
         col = idx
         tx = gx + col * (thumb + gap)
-        ty = gy + row * (thumb + gap)
+        ty = gy
 
-        path = os.path.join(PAGES_DIR, filename)
         if os.path.exists(path):
             src = Image.open(path).convert("RGB").resize((thumb, thumb), Image.LANCZOS)
         else:
