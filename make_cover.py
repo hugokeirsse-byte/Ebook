@@ -16,11 +16,9 @@ VOL     = "Vol. 1"
 TAG     = "A Kawaii Coloring Book"
 AUTHOR  = "Lumi Doodle"
 
-# 4 sample pages to preview on back cover
+# 2 sample pages to preview on back cover
 SAMPLES = [
-    "Monster_05.png",   # California
     "Monster_11.png",   # Hawaii
-    "Monster_31.png",   # New York
     "Monster_42.png",   # Texas
 ]
 
@@ -128,17 +126,17 @@ def build_back(img):
     cx    = BACK_W // 2
     x1, x2 = SAFE + 40, BACK_W - SAFE - 40
 
-    # ── 2×2 thumbnail grid ────────────────────────────────────────────────
-    thumb = 840
-    gap   = 48
+    # ── 1×2 thumbnail row (side by side) ─────────────────────────────────
+    thumb = 900
+    gap   = 50
     grid_w = 2 * thumb + gap
-    grid_h = 2 * thumb + gap
-    gx = (BACK_W - grid_w) // 2   # 429px — well inside safe zone
-    gy = SAFE + 50                 # 201px from top
+    grid_h = thumb
+    gx = (BACK_W - grid_w) // 2
+    gy = H // 2 - grid_h // 2 + 100   # centered vertically, slightly low
 
     for idx, filename in enumerate(SAMPLES):
-        row = idx // 2
-        col = idx % 2
+        row = 0
+        col = idx
         tx = gx + col * (thumb + gap)
         ty = gy + row * (thumb + gap)
 
