@@ -52,7 +52,7 @@ RAINBOW = [
     (160,  60, 255),   # violet
 ]
 
-BORDER = round(0.28 * DPI)   # 84px — just enough to cover baked-in text
+BORDER = SAFE   # 151px — exactly the KDP safe zone, minimum required
 
 
 def rainbow_color(t):
@@ -93,7 +93,7 @@ def apply_rainbow_frame(panel, name):
     # Author name just above the bottom border, inside the image
     fn = ImageFont.truetype(FONT_BOLD, 72)
     cx = w // 2
-    y  = h - BORDER - round(0.25 * DPI)
+    y  = h - SAFE - round(0.15 * DPI)     # center well inside safe zone
     stroke = 3
     for dx in range(-stroke, stroke + 1):
         for dy in range(-stroke, stroke + 1):
