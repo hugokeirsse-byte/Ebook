@@ -1,9 +1,10 @@
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageFilter
 import numpy as np
 import os
 
-FONT_BOLD = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
-FONT_REG  = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
+FONT_BOLD    = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+FONT_REG     = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
+FONT_FREDOKA = "/home/user/Ebook/fonts/FredokaOne-Regular.ttf"
 
 FRONT_PATH = "/root/.claude/uploads/e3aa924e-cb08-4062-b172-e0c76fa72e62/61afefb5-1000008430.png"
 BACK_PATH  = "/root/.claude/uploads/e3aa924e-cb08-4062-b172-e0c76fa72e62/f97abaa8-1000008431.png"
@@ -77,6 +78,43 @@ def outlined_text(draw, x, y, text, font, fill, outline=(10,10,10), sw=5, anchor
     draw.text((x, y), text, fill=fill, font=font, anchor=anchor)
 
 
+def bubble_rainbow_text(panel, x, y, text, font, blur=22, anchor="mt"):
+    """Bubbly rounded letters with rainbow gradient fill + dark halo outline."""
+    tmp_draw = ImageDraw.Draw(panel)
+    bbox = tmp_draw.textbbox((x, y), text, font=font, anchor=anchor)
+    tx0, ty0, tx1, ty1 = bbox
+    pad = blur * 4
+    tw, th = tx1 - tx0 + 2 * pad, ty1 - ty0 + 2 * pad
+    ox, oy = x - tx0 + pad, y - ty0 + pad   # offset into sub-image
+
+    # 1. Render text as white on black
+    base = Image.new("L", (tw, th), 0)
+    ImageDraw.Draw(base).text((ox, oy), text, fill=255, font=font, anchor=anchor)
+
+    # 2. Gaussian blur → threshold gives smooth rounded/bubbly silhouette
+    blurred = np.array(base.filter(ImageFilter.GaussianBlur(radius=blur)), dtype=float)
+    halo_mask  = Image.fromarray(np.clip(blurred * 3.5,   0, 255).astype(np.uint8))
+    fill_mask  = Image.fromarray(np.clip(blurred * 6.0,   0, 255).astype(np.uint8))
+
+    # 3. Dark halo (outline)
+    dark = Image.new("RGB", (tw, th), (18, 18, 18))
+    panel.paste(dark, (tx0 - pad, ty0 - pad), halo_mask)
+
+    # 4. Rainbow gradient fill
+    grad = np.zeros((th, tw, 3), dtype=np.uint8)
+    for px in range(tw):
+        grad[:, px, :] = rainbow_color(px / max(tw - 1, 1))
+    panel.paste(Image.fromarray(grad), (tx0 - pad, ty0 - pad), fill_mask)
+
+    # 5. White highlight on upper-left third for glossy 3-D look
+    hi_arr = np.array(base.filter(ImageFilter.GaussianBlur(radius=blur // 3)), dtype=float)
+    hi_mask = Image.fromarray(np.clip(hi_arr * 1.2, 0, 255).astype(np.uint8))
+    hi_h = th // 3
+    hi_strip = Image.new("RGB", (tw, hi_h), (255, 255, 255))
+    hi_mask_crop = hi_mask.crop((0, 0, tw, hi_h))
+    panel.paste(hi_strip, (tx0 - pad, ty0 - pad), hi_mask_crop)
+
+
 def rainbow_stripe(draw, y, x1, x2, h=10):
     for x in range(x1, x2):
         col = rainbow_color((x - x1) / max(x2 - x1 - 1, 1))
@@ -89,33 +127,32 @@ def build_front(img):
     cx    = FRONT_W // 2
     x1, x2 = SAFE + 40, FRONT_W - SAFE - 40
 
-    fn_title  = ImageFont.truetype(FONT_BOLD, 210)
-    fn_sub    = ImageFont.truetype(FONT_BOLD, 88)
-    fn_vol    = ImageFont.truetype(FONT_REG,  68)
-    fn_tag    = ImageFont.truetype(FONT_BOLD, 74)
-    fn_author = ImageFont.truetype(FONT_BOLD, 62)
+    FONT_OPENSANS_XB = "/usr/share/fonts/truetype/open-sans/OpenSans-ExtraBold.ttf"
+    fn_title  = ImageFont.truetype(FONT_OPENSANS_XB, 230)
+    fn_sub    = ImageFont.truetype(FONT_OPENSANS_XB, 90)
+    fn_vol    = ImageFont.truetype(FONT_BOLD,         72)
+    fn_tag    = ImageFont.truetype(FONT_OPENSANS_XB,  76)
+    fn_author = ImageFont.truetype(FONT_OPENSANS_XB,  64)
 
-    # Title — gold + black outline
-    outlined_text(draw, cx, 195, TITLE, fn_title,
-                  fill=(255,215,0), outline=(15,15,15), sw=7, anchor="mt")
+    # Title — bubble letters with rainbow gradient
+    bubble_rainbow_text(panel, cx, 185, TITLE, fn_title, blur=22, anchor="mt")
 
-    rainbow_stripe(draw, 440, x1, x2, h=10)
+    rainbow_stripe(draw, 450, x1, x2, h=10)
 
-    outlined_text(draw, cx, 470, SUB, fn_sub,
-                  fill=(255,255,255), outline=(15,15,15), sw=4, anchor="mt")
+    outlined_text(draw, cx, 478, SUB, fn_sub,
+                  fill=(255, 255, 255), outline=(15, 15, 15), sw=4, anchor="mt")
 
-    outlined_text(draw, cx, 580, VOL, fn_vol,
-                  fill=(255,255,255), outline=(15,15,15), sw=3, anchor="mt")
+    outlined_text(draw, cx, 598, VOL, fn_vol,
+                  fill=(255, 255, 255), outline=(15, 15, 15), sw=3, anchor="mt")
 
     # Bottom — tagline + author (all within safe zone)
-    outlined_text(draw, cx, 2195, TAG, fn_tag,
-                  fill=(255,255,255), outline=(15,15,15), sw=4, anchor="mt")
+    outlined_text(draw, cx, 2190, TAG, fn_tag,
+                  fill=(255, 255, 255), outline=(15, 15, 15), sw=4, anchor="mt")
 
     rainbow_stripe(draw, 2292, x1, x2, h=10)
 
-    # Author bottom: 2314 + 62 = 2376 < 2474 ✓
     outlined_text(draw, cx, 2314, AUTHOR, fn_author,
-                  fill=(255,255,255), outline=(15,15,15), sw=3, anchor="mt")
+                  fill=(255, 255, 255), outline=(15, 15, 15), sw=3, anchor="mt")
 
     return panel
 
