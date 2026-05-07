@@ -18,7 +18,7 @@ AUTHOR  = "Lumi Doodle"
 
 # 2 sample pages to preview on back cover (full paths)
 SAMPLES = [
-    "/home/user/Ebook/MonsterFamilies/pages/Baby_15_JackOLantern_x_Wraith.jpg",
+    "/home/user/Ebook/pages/Monster_23.png",   # Mermaid of Pascagoula
     "/home/user/Ebook/pages/Monster_47.png",   # Mothman
 ]
 
