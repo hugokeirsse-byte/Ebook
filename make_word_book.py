@@ -162,7 +162,7 @@ def draw_mini_flag(draw, cx, cy, language):
 
 # ── Page renderer ─────────────────────────────────────────────────────────────
 
-def make_page(day_num, date_str, word, language, capital, pronunciation,
+def make_page(day_num, date_str, word, language, country, capital, pronunciation,
               definition, etymology, example, cultural_note,
               related, quote, quote_author,
               out_name="word_demo.png"):
@@ -207,7 +207,7 @@ def make_page(day_num, date_str, word, language, capital, pronunciation,
 
     fn_lang = ImageFont.truetype(FC_REG, 72)
     draw.text((W // 2, flag_cy + 46),
-              f"{language.upper()}  ({capital})  ·  {pronunciation}",
+              f"{language.upper()}  —  {country} ({capital})  ·  {pronunciation}",
               fill=GOLD, font=fn_lang, anchor="mt")
     rule(draw, 618)
     y = 646
@@ -279,6 +279,7 @@ make_page(
     date_str      = "January 1",
     word          = "Hygge",
     language      = "Danish",
+    country       = "Denmark",
     capital       = "Copenhagen",
     pronunciation = "[ HUE-gah ]",
     definition    = "The art of creating warm, cozy moments of togetherness that nurture a deep sense of well-being and contentment.",
@@ -296,6 +297,7 @@ make_page(
     date_str      = "January 2",
     word          = "Saudade",
     language      = "Portuguese",
+    country       = "Portugal",
     capital       = "Lisbon",
     pronunciation = "[ saw-DAH-deh ]",
     definition    = "A deep, bittersweet longing for someone or something beloved that is absent, lost, or may never have truly existed.",
