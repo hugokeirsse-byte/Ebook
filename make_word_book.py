@@ -268,8 +268,9 @@ def make_page(day_num, date_str, word, language, country, capital, pronunciation
     y += 8
     draw.text((W // 2, y), f"— {quote_author}", fill=GOLD, font=fn_qa, anchor="mt")
 
-    img.save(os.path.join(OUT_DIR, out_name))
-    print(f"✓ {out_name}  (content ends y={y})")
+    path = out_name if os.path.isabs(out_name) else os.path.join(OUT_DIR, out_name)
+    img.save(path)
+    print(f"✓ {os.path.basename(path)}  (y={y})")
 
 
 # ── Demo ──────────────────────────────────────────────────────────────────────
