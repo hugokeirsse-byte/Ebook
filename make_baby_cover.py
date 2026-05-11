@@ -19,8 +19,8 @@ AUTHOR  = "Lumi Doodle"
 
 # 2 sample pages to preview on back cover (full paths)
 SAMPLES = [
-    "/home/user/Ebook/MonsterFamilies/pages/Baby_15_JackOLantern_x_Wraith.jpg",
-    "/home/user/Ebook/MonsterFamilies/pages/Baby_03_Ghost_x_Witch.jpg",
+    "/home/user/Ebook/MonsterFamilies/pages/Baby_02_Werewolf_x_Mummy.jpg",
+    "/home/user/Ebook/MonsterFamilies/pages/Baby_18_Zombie_x_VoodooPriestess.jpg",
 ]
 
 DPI      = 300
