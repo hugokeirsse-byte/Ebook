@@ -162,7 +162,7 @@ def draw_mini_flag(draw, cx, cy, language):
 
 # ── Page renderer ─────────────────────────────────────────────────────────────
 
-def make_page(day_num, date_str, word, language, pronunciation,
+def make_page(day_num, date_str, word, language, capital, pronunciation,
               definition, etymology, example, cultural_note,
               related, quote, quote_author,
               out_name="word_demo.png"):
@@ -207,7 +207,7 @@ def make_page(day_num, date_str, word, language, pronunciation,
 
     fn_lang = ImageFont.truetype(FC_REG, 72)
     draw.text((W // 2, flag_cy + 46),
-              f"{language.upper()}  ·  {pronunciation}",
+              f"{language.upper()}  ({capital})  ·  {pronunciation}",
               fill=GOLD, font=fn_lang, anchor="mt")
     rule(draw, 618)
     y = 646
@@ -279,14 +279,15 @@ make_page(
     date_str      = "January 1",
     word          = "Hygge",
     language      = "Danish",
+    capital       = "Copenhagen",
     pronunciation = "[ HUE-gah ]",
     definition    = "The art of creating warm, cozy moments of togetherness that nurture a deep sense of well-being and contentment.",
     etymology     = "From Old Norse hygga — to comfort, to console. Related to the English word hug.",
     example       = "She lit candles, brewed tea, and let hygge fill the quiet Sunday afternoon.",
     cultural_note = "Danes consistently rank among the world's happiest people — and hygge is widely cited as their secret.",
     related       = "Gezellig (Dutch)  ·  Gemütlich (German)  ·  Mysig (Swedish)",
-    quote         = "There is no duty we so much underrate as the duty of being happy.",
-    quote_author  = "Robert Louis Stevenson",
+    quote         = "Life itself is the most wonderful fairy tale.",
+    quote_author  = "Hans Christian Andersen",
     out_name      = "word_jan01_hygge.png",
 )
 
@@ -295,13 +296,14 @@ make_page(
     date_str      = "January 2",
     word          = "Saudade",
     language      = "Portuguese",
+    capital       = "Lisbon",
     pronunciation = "[ saw-DAH-deh ]",
     definition    = "A deep, bittersweet longing for someone or something beloved that is absent, lost, or may never have truly existed.",
     etymology     = "From Latin solitatem — solitude. Shaped by centuries of Portuguese seafaring and exile.",
     example       = "Listening to old records alone, he was quietly overcome by saudade.",
     cultural_note = "Saudade is the emotional soul of Portugal and Brazil — the very heart of fado music.",
     related       = "Hiraeth (Welsh)  ·  Toska (Russian)  ·  Sehnsucht (German)",
-    quote         = "The bitterest tears shed over graves are for words left unsaid and deeds left undone.",
-    quote_author  = "Harriet Beecher Stowe",
+    quote         = "Everything is worth it if the soul is not small.",
+    quote_author  = "Fernando Pessoa",
     out_name      = "word_jan02_saudade.png",
 )
