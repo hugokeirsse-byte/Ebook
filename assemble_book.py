@@ -1,10 +1,11 @@
 from PIL import Image, ImageDraw, ImageFont
 import os
 
-FONT_BOLD = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
-FONT_REG  = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
-PAGES_DIR = "/home/user/Ebook/pages"
-OUT_PDF   = "/home/user/Ebook/TinyMonsters_Vol1_Interior.pdf"
+FONT_BOLD  = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+FONT_REG   = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
+PAGES_DIR  = "/home/user/Ebook/pages"
+OUT_PDF    = "/home/user/Ebook/TinyMonsters_Vol1_Interior.pdf"
+INTRO_DIR  = "/home/user/Ebook"   # intro_title_page.png, intro_belongs_page.png
 
 DPI     = 300
 W_TRIM  = round(8.5   * DPI)    # 2550px — trim size
@@ -39,22 +40,18 @@ def blank_page():
     return Image.new("RGB", (W, H), "white")
 
 
-def title_page():
+def load_intro(filename):
+    """Load a pre-generated 2626×2626 intro PNG (already includes bleed)."""
+    path = os.path.join(INTRO_DIR, filename)
+    if os.path.exists(path):
+        return Image.open(path).convert("RGB")
+    # Fallback: plain white with title text
+    print(f"  ⚠️  {filename} not found — generating plain fallback")
     trim = Image.new("RGB", (W_TRIM, H_TRIM), "white")
     draw = ImageDraw.Draw(trim)
     cx   = W_TRIM // 2
     fn_t = ImageFont.truetype(FONT_BOLD, 185)
-    fn_s = ImageFont.truetype(FONT_REG,  90)
-    fn_v = ImageFont.truetype(FONT_BOLD, 120)
-    fn_a = ImageFont.truetype(FONT_REG,  80)
-
-    draw.text((cx, 520),  "TINY MONSTERS",          fill="black", font=fn_t, anchor="mt")
-    draw.line([(280, 800), (W_TRIM-280, 800)],        fill="black", width=7)
-    draw.text((cx, 850),  "Cryptids of the USA",     fill="black", font=fn_s, anchor="mt")
-    draw.text((cx, 990),  "Vol. 1",                  fill="black", font=fn_v, anchor="mt")
-    draw.line([(280, 1190), (W_TRIM-280, 1190)],      fill="black", width=7)
-    draw.text((cx, 1780), "A Kawaii Coloring Book",   fill="black", font=fn_s, anchor="mt")
-    draw.text((cx, 2200), "Lumi Doodle",              fill="black", font=fn_a, anchor="mt")
+    draw.text((cx, 900), "TINY MONSTERS", fill="black", font=fn_t, anchor="mt")
     return with_bleed(trim)
 
 
@@ -137,7 +134,12 @@ PAGE_ORDER = [
 print("Assembling Tiny Monsters Vol.1 interior PDF...")
 print(f"Page size : {W}×{H}px ({W/DPI:.3f}\"×{H/DPI:.3f}\") — includes {BLEED}px bleed each side")
 
-all_pages = [title_page(), copyright_page(), blank_page(), blank_page()]
+all_pages = [
+    load_intro("intro_title_page.png"),    # illustrated title page
+    load_intro("intro_belongs_page.png"),  # "This Book Belongs To:" page
+    copyright_page(),
+    blank_page(),
+]
 
 for i, (filename, state) in enumerate(PAGE_ORDER):
     path = os.path.join(PAGES_DIR, filename)
