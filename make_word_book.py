@@ -1,142 +1,173 @@
 """
-"Untranslatable" — A Word for Every Day of the Year
-Demo: génère une page KDP (1800×2700px, 6×9in portrait, 300 DPI)
+"One Word a Day" — The Curiosity Press
+Page KDP carrée 8×8in (2400×2400px, 300 DPI)
 """
 from PIL import Image, ImageDraw, ImageFont
-import os
+import numpy as np, os
 
 BG_PATH = "/root/.claude/uploads/ed975202-b10e-4904-b9ca-246001848a28/2be84b39-1000008697.png"
 OUT_DIR  = "/home/user/Ebook"
 
-# KDP 6×9 portrait at 300 DPI
-W, H   = 1800, 2700
+W, H   = 2400, 2400          # 8×8 inch carré à 300 DPI
 CREAM  = (252, 249, 242)
-GOLD   = (180, 148, 90)
-DARK   = (45,  38,  30)
-GRAY   = (140, 128, 110)
-LGRAY  = (195, 185, 168)
+GOLD   = (168, 138, 82)
+DARK   = (38,  32,  24)
+GRAY   = (120, 110, 95)
+LGRAY  = (190, 180, 162)
+RULE   = (210, 200, 182)
 
-FXB  = "/usr/share/fonts/truetype/open-sans/OpenSans-ExtraBold.ttf"
-FB   = "/usr/share/fonts/truetype/open-sans/OpenSans-Bold.ttf"
-FSB  = "/usr/share/fonts/truetype/open-sans/OpenSans-Semibold.ttf"
-FREG = "/usr/share/fonts/truetype/open-sans/OpenSans-Regular.ttf"
-FFRED = "/home/user/Ebook/fonts/FredokaOne-Regular.ttf"
+# Polices élégantes
+FC_REG  = "/home/user/Ebook/fonts/CormorantGaramond-Regular.ttf"
+FC_BOLD = "/home/user/Ebook/fonts/CormorantGaramond-Bold.ttf"
+FC_ITAL = "/home/user/Ebook/fonts/CormorantGaramond-Italic.ttf"
+FP_BOLD = "/home/user/Ebook/fonts/PlayfairDisplay-Bold.ttf"
+FP_ITAL = "/home/user/Ebook/fonts/PlayfairDisplay-Italic.ttf"
+FP_REG  = "/home/user/Ebook/fonts/PlayfairDisplay-Regular.ttf"
 
-def make_page(date_str, word, language, pronunciation, definition, example,
+
+def wrap(text, font, draw, max_w):
+    words = text.split()
+    lines, line = [], ""
+    for w in words:
+        test = (line + " " + w).strip()
+        if draw.textlength(test, font=font) <= max_w:
+            line = test
+        else:
+            if line: lines.append(line)
+            line = w
+    if line: lines.append(line)
+    return lines
+
+
+def rule(draw, y, x1=160, x2=None, color=None, w=1):
+    if x2 is None: x2 = W - 160
+    if color is None: color = RULE
+    draw.rectangle([x1, y, x2, y+w], fill=color)
+
+
+def ornament(draw, y, font_size=52):
+    fn = ImageFont.truetype(FC_REG, font_size)
+    draw.text((W//2, y), "✦", fill=GOLD, font=fn, anchor="mt")
+
+
+def make_page(day_num, date_str, word, language, pronunciation,
+              definition, etymology, example, cultural_note,
               out_name="word_demo.png"):
+
     # ── Canvas ────────────────────────────────────────────────────────────────
     img  = Image.new("RGB", (W, H), CREAM)
-    draw = ImageDraw.Draw(img)
 
-    # ── Watercolor background — anchored at bottom ────────────────────────────
-    bg   = Image.open(BG_PATH).convert("RGB")
-    # Scale to full width
+    # ── Watercolor en bas ─────────────────────────────────────────────────────
+    bg    = Image.open(BG_PATH).convert("RGB")
     scale = W / bg.width
     bh    = round(bg.height * scale)
     bg    = bg.resize((W, bh), Image.LANCZOS)
-    # Paste at bottom
+
+    # Fondu cream → watercolor
+    arr = np.array(bg)
+    fade = 180  # pixels de fondu
+    for i in range(fade):
+        t = i / fade
+        arr[i] = (np.array(CREAM)*(1-t) + arr[i]*t).astype("uint8")
+    bg = Image.fromarray(arr)
     img.paste(bg, (0, H - bh))
 
-    # Soft gradient overlay at top to blend cream into watercolor
-    import numpy as np
-    grad_h = H - bh + 120
-    arr    = np.array(img)
-    for y in range(max(0, H-bh-80), min(H, H-bh+160)):
-        t = (y - (H-bh-80)) / 240
-        t = max(0, min(1, t))
-        # blend row toward cream
-        arr[y] = (arr[y] * t + np.array(CREAM) * (1-t)).astype("uint8")
-    img  = Image.fromarray(arr)
     draw = ImageDraw.Draw(img)
 
-    # ── Thin gold top rule ────────────────────────────────────────────────────
-    draw.rectangle([120, 110, W-120, 113], fill=GOLD)
+    # ── Marge dorée supérieure ────────────────────────────────────────────────
+    draw.rectangle([0, 0, W, 8], fill=GOLD)
 
-    # ── Date ─────────────────────────────────────────────────────────────────
-    fn_date = ImageFont.truetype(FREG, 52)
-    draw.text((W//2, 145), date_str.upper(),
-              fill=LGRAY, font=fn_date, anchor="mt",
-              spacing=8)
+    # ── Date & numéro ─────────────────────────────────────────────────────────
+    fn_date = ImageFont.truetype(FC_REG, 52)
+    draw.text((W//2, 44), f"Day {day_num}  ·  {date_str}",
+              fill=LGRAY, font=fn_date, anchor="mt")
 
-    # ── Word ─────────────────────────────────────────────────────────────────
-    fn_word = ImageFont.truetype(FB, 210)
-    draw.text((W//2, 230), word,
-              fill=DARK, font=fn_word, anchor="mt")
+    rule(draw, 116, color=RULE)
 
-    # ── Language + pronunciation ──────────────────────────────────────────────
-    fn_lang = ImageFont.truetype(FREG, 56)
-    lang_y  = 480
-    draw.text((W//2, lang_y), f"{language}  ·  {pronunciation}",
+    # ── LE MOT — grande italique Playfair ─────────────────────────────────────
+    fn_word = ImageFont.truetype(FP_ITAL, 260)
+    draw.text((W//2, 136), word, fill=DARK, font=fn_word, anchor="mt")
+
+    # ── Langue + prononciation ────────────────────────────────────────────────
+    fn_lang = ImageFont.truetype(FC_REG, 62)
+    lang_y  = 420
+    draw.text((W//2, lang_y),
+              f"{language.upper()}  ·  {pronunciation}",
               fill=GOLD, font=fn_lang, anchor="mt")
 
-    # ── Thin gold divider ─────────────────────────────────────────────────────
-    draw.rectangle([120, lang_y+76, W-120, lang_y+79], fill=LGRAY)
+    rule(draw, lang_y + 86, color=RULE)
+    y = lang_y + 110
 
-    # ── Definition ────────────────────────────────────────────────────────────
-    fn_def  = ImageFont.truetype(FSB,  68)
-    fn_body = ImageFont.truetype(FREG, 60)
+    # ── Définition ────────────────────────────────────────────────────────────
+    fn_def = ImageFont.truetype(FP_REG, 66)
+    for line in wrap(definition, fn_def, draw, W - 340):
+        draw.text((W//2, y), line, fill=DARK, font=fn_def, anchor="mt")
+        y += 82
+    y += 14
 
-    def wrap(text, font, max_w):
-        words = text.split()
-        lines, line = [], ""
-        for w in words:
-            test = (line + " " + w).strip()
-            if draw.textlength(test, font=font) <= max_w:
-                line = test
-            else:
-                if line: lines.append(line)
-                line = w
-        if line: lines.append(line)
-        return lines
+    # ── Étymologie ────────────────────────────────────────────────────────────
+    fn_etym_lbl = ImageFont.truetype(FC_BOLD, 50)
+    fn_etym     = ImageFont.truetype(FC_ITAL, 54)
+    draw.text((W//2, y), "Etymology", fill=GOLD, font=fn_etym_lbl, anchor="mt")
+    y += 60
+    for line in wrap(etymology, fn_etym, draw, W - 340):
+        draw.text((W//2, y), line, fill=GRAY, font=fn_etym, anchor="mt")
+        y += 66
+    y += 10
 
-    def_y   = lang_y + 106
-    max_w   = W - 280
-    lines   = wrap(definition, fn_body, max_w)
-    for line in lines:
-        draw.text((W//2, def_y), line, fill=DARK, font=fn_body, anchor="mt")
-        def_y += 82
+    rule(draw, y, color=RULE)
+    y += 28
 
-    # ── Example sentence ──────────────────────────────────────────────────────
-    ex_y   = def_y + 60
-    draw.rectangle([120, ex_y, W-120, ex_y+3], fill=LGRAY)
-    ex_y  += 36
+    # ── Phrase exemple ────────────────────────────────────────────────────────
+    fn_ex = ImageFont.truetype(FC_ITAL, 60)
+    for line in wrap(f'"{example}"', fn_ex, draw, W - 360):
+        draw.text((W//2, y), line, fill=GRAY, font=fn_ex, anchor="mt")
+        y += 72
+    y += 10
 
-    fn_ex   = ImageFont.truetype(FREG, 54)
-    ex_lines = wrap(f'"{example}"', fn_ex, max_w)
-    for line in ex_lines:
-        draw.text((W//2, ex_y), line, fill=GRAY, font=fn_ex, anchor="mt")
-        ex_y += 72
+    rule(draw, y, color=RULE)
+    y += 30
 
-    # ── Bottom thin gold rule ─────────────────────────────────────────────────
-    draw.rectangle([120, H-bh-30, W-120, H-bh-27], fill=GOLD)
+    # ── Note culturelle ───────────────────────────────────────────────────────
+    fn_note = ImageFont.truetype(FC_REG, 54)
+    draw.text((160, y), "✦", fill=GOLD,
+              font=ImageFont.truetype(FC_REG, 54), anchor="lt")
+    note_lines = wrap(cultural_note, fn_note, draw, W - 400)
+    for line in note_lines:
+        draw.text((W//2, y), line, fill=DARK, font=fn_note, anchor="mt")
+        y += 66
 
-    # ── Book title footer ─────────────────────────────────────────────────────
-    fn_footer = ImageFont.truetype(FREG, 40)
-    draw.text((W//2, H-bh+8), "UNTRANSLATABLE  ·  A Word for Every Day",
-              fill=LGRAY, font=fn_footer, anchor="mt")
+    # ── Marge dorée inférieure ────────────────────────────────────────────────
+    draw.rectangle([0, H-8, W, H], fill=GOLD)
 
     img.save(os.path.join(OUT_DIR, out_name))
     print(f"✓ {out_name}")
 
 
-# ── Demo pages ────────────────────────────────────────────────────────────────
+# ── Pages demo ────────────────────────────────────────────────────────────────
 
 make_page(
-    date_str    = "January  1",
-    word        = "Hygge",
-    language    = "Danish",
-    pronunciation = "[ HUE-gah ]",
-    definition  = "The art of creating warm, cozy moments of comfort and togetherness that nurture a sense of well-being and contentment.",
-    example     = "She lit candles, brewed tea, and let hygge fill the quiet Sunday afternoon.",
-    out_name    = "word_jan01_hygge.png"
+    day_num      = 1,
+    date_str     = "January 1",
+    word         = "Hygge",
+    language     = "Danish",
+    pronunciation= "[ HUE-gah ]",
+    definition   = "The art of creating warm, cozy moments of togetherness that nurture a deep sense of well-being and contentment.",
+    etymology    = "From Old Norse hygga — to comfort, to console. Related to the English word hug.",
+    example      = "She lit candles, brewed tea, and let hygge fill the quiet Sunday afternoon.",
+    cultural_note= "Danes rank among the world's happiest people — and hygge is widely cited as their secret.",
+    out_name     = "word_jan01_hygge.png"
 )
 
 make_page(
-    date_str    = "January  2",
-    word        = "Saudade",
-    language    = "Portuguese",
-    pronunciation = "[ saw-DAH-deh ]",
-    definition  = "A deep, bittersweet longing for someone or something beloved that is absent, lost, or may never have existed.",
-    example     = "Listening to old records, he was overcome by saudade for summers long gone.",
-    out_name    = "word_jan02_saudade.png"
+    day_num      = 2,
+    date_str     = "January 2",
+    word         = "Saudade",
+    language     = "Portuguese",
+    pronunciation= "[ saw-DAH-deh ]",
+    definition   = "A deep, bittersweet longing for someone or something beloved that is absent, lost, or may never have truly existed.",
+    etymology    = "From Latin solitatem — solitude. Evolved through centuries of Portuguese seafaring and exile.",
+    example      = "Listening to old records alone, he was quietly overcome by saudade.",
+    cultural_note= "Saudade is considered the emotional soul of Portuguese and Brazilian culture, at the heart of fado music.",
+    out_name     = "word_jan02_saudade.png"
 )
