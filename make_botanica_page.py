@@ -180,6 +180,7 @@ def make_botanica_page(
     interactions,
     cultural_note,
     regions,
+    legend_items=None,
     illus_main=None,
     out_name="botanica_demo.png"
 ):
@@ -293,27 +294,13 @@ def make_botanica_page(
     d.text((RIGHT_X + lhdr_w, note_y), "· all details magnified", fill=LGOLD, font=fn_lnote)
     ry += text_h("A", fn_lhdr, d) + 12
 
-    # Legend items — exact from Köhler's original (two mini-columns)
-    legend_items = [
-        ("A.",   "Plant, natural size"),
-        ("1.",   "Flower head with involucre"),
-        ("2.",   "Flower head — long. section"),
-        ("3.",   "Ray floret"),
-        ("4.",   "Disc floret — closed"),
-        ("5.",   "Disc floret — open"),
-        ("6.",   "Disc floret — long. section"),
-        ("7.",   "Stamen tube, style & stigmas"),
-        ("8.",   "Stigmas of disc floret"),
-        ("9.",   "Pollen grain"),
-        ("10.",  "Receptacle"),
-        ("11.",  "Achene"),
-        ("12.",  "Achene — cross-section"),
-        ("13.",  "Achene — long. section"),
-    ]
-    num_w  = d.textbbox((0,0), "13.  ", font=fn_litem)[2]
+    # Legend items — passed per plant, two mini-columns
+    if legend_items is None:
+        legend_items = []
+    num_w  = d.textbbox((0,0), "10.  ", font=fn_litem)[2]
     li_h   = text_h("A", fn_litem, d) + 9
     MID_X  = RIGHT_X + RIGHT_W // 2
-    split  = 8   # A + 1-7 in left, 8-13 in right
+    split  = (len(legend_items) + 1) // 2
     left_items  = legend_items[:split]
     right_items = legend_items[split:]
 
@@ -391,7 +378,39 @@ def make_botanica_page(
     img.save(out_name)
 
 
-# ── Demo — Chamomile ──────────────────────────────────────────────────────────
+LEGEND_CHAMOMILE = [
+    ("A.",   "Plant, natural size"),
+    ("1.",   "Flower head with involucre"),
+    ("2.",   "Flower head — long. section"),
+    ("3.",   "Ray floret"),
+    ("4.",   "Disc floret — closed"),
+    ("5.",   "Disc floret — open"),
+    ("6.",   "Disc floret — long. section"),
+    ("7.",   "Stamen tube, style & stigmas"),
+    ("8.",   "Stigmas of disc floret"),
+    ("9.",   "Pollen grain"),
+    ("10.",  "Receptacle"),
+    ("11.",  "Achene"),
+    ("12.",  "Achene — cross-section"),
+    ("13.",  "Achene — long. section"),
+]
+
+LEGEND_MONKSHOOD = [
+    ("A.",   "Flowering stem, natural size"),
+    ("1.",   "Flower — long. section"),
+    ("2.",   "Flower without sepals"),
+    ("3.",   "Stamens"),
+    ("4.",   "Pollen grain, dry"),
+    ("5.",   "Pistil"),
+    ("6.",   "Pistil — long. section"),
+    ("7.",   "Ovary — cross-section"),
+    ("8.",   "Fruit — 3 follicles"),
+    ("9.",   "Seed"),
+    ("10.",  "Seed — cut open"),
+    ("11.",  "Seed — cut open (view 2)"),
+]
+
+# ── Chamomile ─────────────────────────────────────────────────────────────────
 
 make_botanica_page(
     day_num   = 1,
@@ -400,12 +419,10 @@ make_botanica_page(
     name_la   = "Matricaria chamomilla",
     family    = "Asteraceae",
     origin    = "Central Europe & Western Asia",
-
     parts_used       = "Dried flowers, leaves, stems",
     harvest          = "June – August, in dry weather, at peak bloom",
     habitat          = "Meadows, roadsides, cultivated fields, disturbed soils",
     active_compounds = "Chamazulene · α-Bisabolol · Apigenin · Matricine",
-
     properties = (
         "Anti-inflammatory  ·  Antispasmodic  ·  Mild sedative  ·  "
         "Carminative  ·  Cicatrizant  ·  Antipyretic"
@@ -444,6 +461,63 @@ make_botanica_page(
         "Europe  ·  Asia  ·  North Africa  ·  "
         "North America (naturalized)  ·  Australia (naturalized)"
     ),
-    illus_main = "/home/user/Ebook/kohler_main.jpg",
-    out_name   = "/home/user/Ebook/botanica_demo.png",
+    legend_items = LEGEND_CHAMOMILE,
+    illus_main   = "/home/user/Ebook/kohler_main.jpg",
+    out_name     = "/home/user/Ebook/botanica_demo.png",
+)
+
+# ── Monkshood (Aconite) ───────────────────────────────────────────────────────
+
+make_botanica_page(
+    day_num   = 2,
+    date_str  = "January 2nd",
+    name_fr   = "Monkshood",
+    name_la   = "Aconitum napellus",
+    family    = "Ranunculaceae",
+    origin    = "European Alps, Pyrenees, Carpathians",
+    parts_used       = "Root (dried, strictly controlled) — historical use only",
+    harvest          = "Autumn — root at peak potency. Gloves mandatory.",
+    habitat          = "Alpine meadows, mountain stream banks, shaded forest edges",
+    active_compounds = "Aconitine · Mesaconitine · Hypaconitine",
+    properties = (
+        "Analgesic  ·  Anti-neuralgic  ·  Anti-inflammatory  ·  Antipyretic  ·  "
+        "Used exclusively in homeopathic dilutions today"
+    ),
+    traditional_uses = (
+        "One of the most important plants in 19th-century European pharmacopeia. "
+        "Used in controlled doses for neuralgia, rheumatic pain, and fever. "
+        "Traditional Chinese medicine used related species for pain relief. "
+        "Today used almost exclusively in homeopathy for sudden-onset fever, "
+        "shock, anxiety, and the early stage of acute illness."
+    ),
+    how_to_use = [
+        "Homeopathy only: Aconite 6C–30C — indicated for sudden high fever with "
+        "restlessness, panic attacks, fright, or first hours of a cold or flu.",
+        "Historical topical use: diluted tincture applied externally on intact "
+        "skin for rheumatic pain — never on broken skin, never ingested.",
+    ],
+    precautions   = (
+        "EXTREMELY TOXIC — one of the most poisonous plants in Europe. "
+        "Aconitine is lethal in milligram doses; skin contact causes numbness. "
+        "Never handle without gloves. Never prepare any internal remedy at home. "
+        "Included here for historical and educational purposes only."
+    ),
+    interactions  = (
+        "Contraindicated with all medications in any non-homeopathic form. "
+        "Report any accidental contact to Poison Control immediately."
+    ),
+    cultural_note = (
+        "Called the \"queen of poisons\" since Antiquity — Medea used it in Greek "
+        "myth, and Roman law forbade its cultivation near cities. Its hood-shaped "
+        "flowers gave it the name Monkshood. Despite its extreme toxicity, Aconitum "
+        "was listed in every 19th-century European pharmacopeia as an analgesic — "
+        "a testament to the fine line between poison and cure."
+    ),
+    regions = (
+        "European Alps  ·  Pyrenees  ·  Carpathians  ·  "
+        "Caucasus  ·  Central Asia"
+    ),
+    legend_items = LEGEND_MONKSHOOD,
+    illus_main   = "/home/user/Ebook/aconitum_napellus.jpg",
+    out_name     = "/home/user/Ebook/botanica_monkshood.png",
 )
