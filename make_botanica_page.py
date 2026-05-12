@@ -18,10 +18,10 @@ FC_ITAL = "/home/user/Ebook/fonts/CormorantGaramond-Italic.ttf"
 FP_BOLD = "/home/user/Ebook/fonts/PlayfairDisplay-Bold.ttf"
 FP_ITAL = "/home/user/Ebook/fonts/PlayfairDisplay-Italic.ttf"
 
-W, H     = 2400, 3300
-BORDER   = 52          # outer border offset from edge
-INNER    = BORDER + 16 # inner border offset
-MARGIN   = BORDER + 50 # text margin from edge
+W, H     = 2400, 2400
+BORDER   = 52
+INNER    = BORDER + 16
+MARGIN   = BORDER + 50
 CX       = W // 2
 TW       = W - 2 * MARGIN
 
@@ -55,17 +55,17 @@ def hline(d, y, x0=None, x1=None, color=GOLD, h=2):
     return y + h + 1
 
 
-def body_block(d, y, text, font, color=DARK, indent=0, line_gap=12):
+def body_block(d, y, text, font, color=DARK, indent=0, line_gap=8):
     lh = text_h("Ag", font, d)
     for line in wrap(text, font, TW - indent, d):
         d.text((MARGIN + indent, y), line, fill=color, font=font)
         y += lh + line_gap
-    return y + 10
+    return y + 8
 
 
-def bullet(d, y, text, fn_body, color=DARK, line_gap=12):
+def bullet(d, y, text, fn_body, color=DARK, line_gap=8):
     lh  = text_h("Ag", fn_body, d)
-    ind = 72
+    ind = 64
     d.text((MARGIN + 14, y), "·", fill=GOLD, font=fn_body)
     for line in wrap(text, fn_body, TW - ind, d):
         d.text((MARGIN + ind, y), line, fill=color, font=fn_body)
@@ -73,7 +73,7 @@ def bullet(d, y, text, fn_body, color=DARK, line_gap=12):
     return y + 8
 
 
-def sec(d, y, label, fn_sec, gap_after=16):
+def sec(d, y, label, fn_sec, gap_after=10):
     d.text((MARGIN, y), label, fill=FOREST, font=fn_sec)
     return y + text_h(label, fn_sec, d) + gap_after
 
@@ -82,7 +82,7 @@ def inline_pair(d, y, label, value, fn_label, fn_val, sep="  "):
     d.text((MARGIN, y), label, fill=FOREST, font=fn_label)
     lw = d.textbbox((0, 0), label + sep, font=fn_label)[2]
     d.text((MARGIN + lw, y), value, fill=DARK, font=fn_val)
-    return y + text_h(label, fn_label, d) + 14
+    return y + text_h(label, fn_label, d) + 10
 
 
 # ── Decorative border (matches cover aesthetic) ───────────────────────────────
@@ -171,36 +171,30 @@ def place_crop(page_img, src_img, bg_col, fracs, dst_box):
 def make_botanica_page(
     day_num, date_str,
     name_fr, name_la, family, origin,
-    parts_used, harvest,
+    parts_used, harvest, habitat,
     active_compounds,
     properties,
     traditional_uses,
-    how_to_use,        # list of strings
+    how_to_use,
     precautions,
     interactions,
     cultural_note,
     regions,
-    # optional illustration paths
     illus_main=None,
-    illus_detail1=None,
-    illus_detail2=None,
     out_name="botanica_demo.png"
 ):
     img = Image.new("RGB", (W, H), CREAM)
     d   = ImageDraw.Draw(img)
 
-    # Fonts
-    fn_tiny   = ImageFont.truetype(FC_REG,  40)
-    fn_day    = ImageFont.truetype(FC_REG,  52)
-    fn_name   = ImageFont.truetype(FC_BOLD, 130)
-    fn_latin  = ImageFont.truetype(FC_ITAL,  72)
-    fn_family = ImageFont.truetype(FC_REG,   50)
-    fn_sec    = ImageFont.truetype(FP_BOLD,  52)
-    fn_label  = ImageFont.truetype(FP_BOLD,  48)
-    fn_body   = ImageFont.truetype(FC_REG,   56)
-    fn_props  = ImageFont.truetype(FC_ITAL,  54)
-    fn_note   = ImageFont.truetype(FC_ITAL,  54)
-    fn_tag    = ImageFont.truetype(FC_REG,   44)
+    # Fonts — tuned for 2400×2400 square
+    fn_tiny   = ImageFont.truetype(FC_REG,  34)
+    fn_day    = ImageFont.truetype(FC_REG,  44)
+    fn_sec    = ImageFont.truetype(FP_BOLD, 42)
+    fn_label  = ImageFont.truetype(FP_BOLD, 40)
+    fn_body   = ImageFont.truetype(FC_REG,  44)
+    fn_props  = ImageFont.truetype(FC_ITAL, 43)
+    fn_note   = ImageFont.truetype(FC_ITAL, 43)
+    fn_tag    = ImageFont.truetype(FC_REG,  38)
 
     # ── Border ────────────────────────────────────────────────────────
     draw_border(img, d)
@@ -224,9 +218,9 @@ def make_botanica_page(
     y += 24
 
     # ── Two-column section: image LEFT | name + legend RIGHT ─────────
-    COL_H   = 1320          # height of the two-column block
-    LEFT_W  = 1080          # illustration column width
-    GAP_COL = 28            # gap between columns
+    COL_H   = 820
+    LEFT_W  = 1000
+    GAP_COL = 28
     RIGHT_X = MARGIN + LEFT_W + GAP_COL
     RIGHT_W = W - MARGIN - RIGHT_X
 
@@ -258,65 +252,70 @@ def make_botanica_page(
         illus_placeholder(img, d, MARGIN, y, MARGIN+LEFT_W, y+COL_H, name_la)
 
     # Right — plant name + legend
-    fn_rname  = ImageFont.truetype(FC_BOLD,  94)
-    fn_rlatin = ImageFont.truetype(FC_ITAL,  58)
-    fn_rfam   = ImageFont.truetype(FC_REG,   46)
-    fn_lhdr   = ImageFont.truetype(FP_BOLD,  46)
-    fn_litem  = ImageFont.truetype(FC_REG,   44)
-    fn_lsrc   = ImageFont.truetype(FC_ITAL,  38)
+    fn_rname  = ImageFont.truetype(FC_BOLD, 82)
+    fn_rlatin = ImageFont.truetype(FC_ITAL, 52)
+    fn_rfam   = ImageFont.truetype(FC_REG,  42)
+    fn_lhdr   = ImageFont.truetype(FP_BOLD, 42)
+    fn_litem  = ImageFont.truetype(FC_REG,  42)
+    fn_lsrc   = ImageFont.truetype(FC_ITAL, 36)
 
-    ry = y + 24
+    ry = y + 22
 
     # Plant name
     d.text((RIGHT_X, ry), name_fr.upper(), fill=DARK, font=fn_rname)
-    ry += text_h(name_fr.upper(), fn_rname, d) + 10
+    ry += text_h(name_fr.upper(), fn_rname, d) + 8
 
     # Latin
     d.text((RIGHT_X, ry), name_la, fill=GOLD, font=fn_rlatin)
-    ry += text_h(name_la, fn_rlatin, d) + 10
+    ry += text_h(name_la, fn_rlatin, d) + 8
 
-    # Family · origin
-    fam_text = f"{family}  ·  {origin}"
-    for line in wrap(fam_text, fn_rfam, RIGHT_W, d):
+    # Family · origin (wrapped)
+    for line in wrap(f"{family}  ·  {origin}", fn_rfam, RIGHT_W, d):
         d.text((RIGHT_X, ry), line, fill=DARK, font=fn_rfam)
-        ry += text_h(line, fn_rfam, d) + 6
-    ry += 14
+        ry += text_h(line, fn_rfam, d) + 5
+
+    # Habitat
+    ry += 6
+    d.text((RIGHT_X, ry), "Habitat :", fill=FOREST, font=fn_rfam)
+    hw = d.textbbox((0,0), "Habitat :  ", font=fn_rfam)[2]
+    d.text((RIGHT_X + hw, ry), habitat, fill=DARK, font=fn_rfam)
+    ry += text_h("A", fn_rfam, d) + 16
 
     # Rule
     d.rectangle([RIGHT_X, ry, W-MARGIN, ry+1], fill=LGOLD)
-    ry += 18
+    ry += 20
 
     # Legend header
     d.text((RIGHT_X, ry), "Figure Legend", fill=FOREST, font=fn_lhdr)
-    ry += text_h("A", fn_lhdr, d) + 14
+    ry += text_h("A", fn_lhdr, d) + 18
 
-    # Legend items
+    # Legend items — airy spacing
     legend_items = [
-        ("1.",  "Flowering plant"),
-        ("2.",  "Flower head cross-section"),
-        ("3.",  "Ray floret (petal)"),
-        ("4.",  "Disc floret"),
-        ("5.",  "Flower bud"),
-        ("6.",  "Disc floret — magnified"),
-        ("7.",  "Ray floret — magnified"),
-        ("8.",  "Achene"),
-        ("9.",  "Achene cross-section"),
+        ("1.",     "Flowering plant"),
+        ("2.",     "Flower head cross-section"),
+        ("3.",     "Ray floret (petal)"),
+        ("4.",     "Disc floret"),
+        ("5.",     "Flower bud"),
+        ("6.",     "Disc floret — magnified"),
+        ("7.",     "Ray floret — magnified"),
+        ("8.",     "Achene"),
+        ("9.",     "Achene cross-section"),
         ("10–11.", "Seeds"),
         ("12–13.", "Seed cross-sections"),
-        ("19.", "Leaf & stem detail"),
+        ("19.",    "Leaf & stem detail"),
     ]
     num_w = d.textbbox((0,0), "10–11.  ", font=fn_litem)[2]
-    li_h  = text_h("A", fn_litem, d) + 9
+    li_h  = text_h("A", fn_litem, d) + 16   # airy gap
     for num, desc in legend_items:
-        if ry + li_h > col_top + COL_H - 50:
+        if ry + li_h > col_top + COL_H - 52:
             break
-        d.text((RIGHT_X,          ry), num,  fill=GOLD, font=fn_litem)
-        d.text((RIGHT_X + num_w,  ry), desc, fill=DARK, font=fn_litem)
+        d.text((RIGHT_X,         ry), num,  fill=GOLD, font=fn_litem)
+        d.text((RIGHT_X + num_w, ry), desc, fill=DARK, font=fn_litem)
         ry += li_h
 
-    # Source at bottom of right column
-    src_y = col_top + COL_H - 44
-    d.rectangle([RIGHT_X, src_y-10, W-MARGIN, src_y-9], fill=LGOLD)
+    # Source pinned to bottom of right column
+    src_y = col_top + COL_H - 42
+    d.rectangle([RIGHT_X, src_y - 12, W-MARGIN, src_y - 11], fill=LGOLD)
     d.text((RIGHT_X, src_y),
            "Köhler's Medizinal-Pflanzen, 1887  ·  Public domain",
            fill=LGOLD, font=fn_lsrc)
@@ -327,9 +326,9 @@ def make_botanica_page(
     y += 30
 
     # ── Quick-ref row ─────────────────────────────────────────────────
-    y = inline_pair(d, y, "Parts used: ",         parts_used,       fn_label, fn_body)
-    y = inline_pair(d, y, "Harvest: ",            harvest,          fn_label, fn_body)
-    y = inline_pair(d, y, "Active compounds: ",   active_compounds, fn_label, fn_props)
+    y = inline_pair(d, y, "Parts used: ",       parts_used,       fn_label, fn_body)
+    y = inline_pair(d, y, "Harvest: ",          harvest,          fn_label, fn_body)
+    y = inline_pair(d, y, "Active compounds: ", active_compounds, fn_label, fn_props)
 
     hline(d, y, color=LGOLD, h=1)
     y += 28
@@ -384,6 +383,7 @@ make_botanica_page(
 
     parts_used       = "Dried flowers, leaves, stems",
     harvest          = "June – August, in dry weather, at peak bloom",
+    habitat          = "Meadows, roadsides, cultivated fields, disturbed soils",
     active_compounds = "Chamazulene · α-Bisabolol · Apigenin · Matricine",
 
     properties = (
@@ -424,8 +424,6 @@ make_botanica_page(
         "Europe  ·  Asia  ·  North Africa  ·  "
         "North America (naturalized)  ·  Australia (naturalized)"
     ),
-    illus_main    = "/home/user/Ebook/kohler_main.jpg",
-    illus_detail1 = "/home/user/Ebook/kohler_detail1.jpg",
-    illus_detail2 = "/home/user/Ebook/kohler_detail2.jpg",
-    out_name      = "/home/user/Ebook/botanica_demo.png",
+    illus_main = "/home/user/Ebook/kohler_main.jpg",
+    out_name   = "/home/user/Ebook/botanica_demo.png",
 )
