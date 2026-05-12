@@ -196,7 +196,7 @@ def make_botanica_page(
     y += 18
 
     # ── Day + date ────────────────────────────────────────────────────
-    d.text((CX, y), f"Jour  {day_num}  ·  {date_str}",
+    d.text((CX, y), f"Day  {day_num}  ·  {date_str}",
            fill=GOLD, font=fn_day, anchor="mt")
     y += text_h("Ag", fn_day, d) + 22
 
@@ -216,14 +216,14 @@ def make_botanica_page(
         d.rectangle([MARGIN, y, main_x1, y + ILLUS_H], outline=LGOLD, width=1)
     else:
         illus_placeholder(img, d, MARGIN, y, main_x1, y + ILLUS_H,
-                          f"{name_la}", "Plante entière · Köhler 1887")
+                          f"{name_la}", "Full plant · Köhler 1887")
 
     # Detail 1
     if illus_detail1 and paste_illustration(img, illus_detail1, detail_x0, y, detail_x1, y + detail_h):
         d.rectangle([detail_x0, y, detail_x1, y + detail_h], outline=LGOLD, width=1)
     else:
         illus_placeholder(img, d, detail_x0, y, detail_x1, y + detail_h,
-                          "Détail fleur")
+                          "Flower detail")
 
     # Detail 2
     dy2 = y + detail_h + 14
@@ -231,7 +231,7 @@ def make_botanica_page(
         d.rectangle([detail_x0, dy2, detail_x1, dy2 + detail_h], outline=LGOLD, width=1)
     else:
         illus_placeholder(img, d, detail_x0, dy2, detail_x1, dy2 + detail_h,
-                          "Racine & graine")
+                          "Root & seed")
 
     y += ILLUS_H + 30
 
@@ -253,42 +253,42 @@ def make_botanica_page(
     y += 28
 
     # ── Quick-ref inline row ──────────────────────────────────────────
-    y = inline_pair(d, y, "Parties utilisées : ", parts_used, fn_label, fn_body)
-    y = inline_pair(d, y, "Récolte : ",           harvest,    fn_label, fn_body)
-    y = inline_pair(d, y, "Composés actifs : ",   active_compounds, fn_label, fn_props)
+    y = inline_pair(d, y, "Parts used: ",         parts_used,       fn_label, fn_body)
+    y = inline_pair(d, y, "Harvest: ",            harvest,          fn_label, fn_body)
+    y = inline_pair(d, y, "Active compounds: ",   active_compounds, fn_label, fn_props)
 
     hline(d, y, color=LGOLD, h=1)
     y += 28
 
     # ── Propriétés ────────────────────────────────────────────────────
-    y = sec(d, y, "Propriétés", fn_sec)
+    y = sec(d, y, "Properties", fn_sec)
     y = body_block(d, y, properties, fn_props)
 
-    # ── Usages traditionnels ──────────────────────────────────────────
-    y = sec(d, y, "Usages traditionnels", fn_sec)
+    # ── Traditional uses ──────────────────────────────────────────────
+    y = sec(d, y, "Traditional Uses", fn_sec)
     y = body_block(d, y, traditional_uses, fn_body)
 
-    # ── Comment l'utiliser ────────────────────────────────────────────
-    y = sec(d, y, "Comment l'utiliser", fn_sec)
+    # ── How to use ────────────────────────────────────────────────────
+    y = sec(d, y, "How to Use", fn_sec)
     for item in how_to_use:
         y = bullet(d, y, item, fn_body)
 
-    # ── Précautions & Interactions ────────────────────────────────────
-    y = sec(d, y, "Précautions & Interactions", fn_sec)
-    y = body_block(d, y, f"{precautions}  |  Interactions : {interactions}", fn_body)
+    # ── Precautions & Interactions ────────────────────────────────────
+    y = sec(d, y, "Precautions & Drug Interactions", fn_sec)
+    y = body_block(d, y, f"{precautions}  |  Interactions: {interactions}", fn_body)
 
     hline(d, y, color=LGOLD, h=1)
     y += 22
 
-    # ── Le savais-tu ──────────────────────────────────────────────────
-    d.text((MARGIN, y), "Le savais-tu ?", fill=GOLD, font=fn_sec)
+    # ── Did you know ──────────────────────────────────────────────────
+    d.text((MARGIN, y), "Did you know?", fill=GOLD, font=fn_sec)
     y += text_h("A", fn_sec, d) + 16
     y = body_block(d, y, cultural_note, fn_note, color=DARK)
 
     hline(d, y, color=LGOLD, h=1)
     y += 20
 
-    # ── Présente dans ─────────────────────────────────────────────────
+    # ── Found in ──────────────────────────────────────────────────────
     d.text((CX, y), regions, fill=GOLD, font=fn_tag, anchor="mt")
 
     # ── Bottom rule inside border ─────────────────────────────────────
@@ -298,58 +298,60 @@ def make_botanica_page(
     img.save(out_name)
 
 
-# ── Demo — Camomille ──────────────────────────────────────────────────────────
+# ── Demo — Chamomile ──────────────────────────────────────────────────────────
 
 make_botanica_page(
     day_num   = 1,
-    date_str  = "1er janvier",
-    name_fr   = "Camomille",
+    date_str  = "January 1st",
+    name_fr   = "Chamomile",
     name_la   = "Matricaria chamomilla",
     family    = "Asteraceae",
-    origin    = "Europe centrale & Asie de l'Ouest",
+    origin    = "Central Europe & Western Asia",
 
-    parts_used       = "Fleurs séchées, feuilles, tiges",
-    harvest          = "Juin – Août, par temps sec, en pleine floraison",
-    active_compounds = "Azulène · α-Bisabolol · Apigénine · Matricine",
+    parts_used       = "Dried flowers, leaves, stems",
+    harvest          = "June – August, in dry weather, at peak bloom",
+    active_compounds = "Chamazulene · α-Bisabolol · Apigenin · Matricine",
 
     properties = (
-        "Anti-inflammatoire  ·  Antispasmodique  ·  Sédatif léger  ·  "
-        "Carminatif  ·  Cicatrisant  ·  Antipyrétique"
+        "Anti-inflammatory  ·  Antispasmodic  ·  Mild sedative  ·  "
+        "Carminative  ·  Cicatrizant  ·  Antipyretic"
     ),
     traditional_uses = (
-        "Troubles digestifs (crampes, ballonnements, coliques, nausées), "
-        "insomnies et anxiété légères, inflammations cutanées, irritations "
-        "oculaires et conjonctivites. Utilisée depuis l'Antiquité comme "
-        "antifièvre et relaxant nerveux."
+        "Digestive complaints (cramps, bloating, colic, nausea), mild insomnia "
+        "and anxiety, skin inflammation, eye irritations and conjunctivitis. "
+        "Used since Antiquity as a fever remedy and nervous system relaxant "
+        "across European and Middle Eastern traditions."
     ),
     how_to_use = [
-        "Infusion : 1 c. à café de fleurs séchées dans 250 ml d'eau bouillante, "
-        "infuser 5–10 min à couvert. 2 à 3 tasses par jour, entre les repas.",
-        "Huile essentielle : diluée à 2 % dans une huile végétale (jojoba, amande douce) "
-        "pour massage local, douleurs articulaires ou tensions musculaires.",
-        "Cataplasme : compresse imbibée d'infusion tiède appliquée sur les yeux "
-        "fatigués ou irrités, 10 min.",
-        "Teinture mère : 30 gouttes dans un verre d'eau, 3 fois par jour.",
+        "Infusion: 1 tsp dried flowers in 250 ml boiling water, steep 5–10 min "
+        "covered. 2 to 3 cups daily, between meals.",
+        "Essential oil: diluted to 2% in a carrier oil (jojoba, sweet almond) "
+        "for local massage on joint pain or muscle tension.",
+        "Compress: a warm chamomile-soaked cloth applied to tired or irritated "
+        "eyes for 10 minutes.",
+        "Tincture: 30 drops in a glass of water, three times a day.",
     ],
     precautions   = (
-        "Allergie possible chez les personnes sensibles aux Asteraceae "
-        "(marguerites, séneçons, armoises). Déconseillée à forte dose "
-        "pendant la grossesse."
+        "Possible allergy in people sensitive to Asteraceae (daisies, ragweed, "
+        "mugwort). Not recommended in high doses during pregnancy."
     ),
     interactions  = (
-        "Anticoagulants (warfarine), sédatifs, cyclosporine — "
-        "consulter un professionnel de santé."
+        "Anticoagulants (warfarin), sedatives, cyclosporine — "
+        "consult a healthcare professional."
     ),
     cultural_note = (
-        "En Égypte ancienne, la camomille était consacrée au dieu soleil Râ "
-        "et utilisée pour traiter la fièvre. Les Saxons la comptaient parmi "
-        "leurs neuf herbes sacrées. Au Moyen Âge, elle était plantée entre "
-        "les pavés des jardins monastiques : on l'appelait la \"plante du marcheur\" "
-        "car elle résistait à tous les piétinements."
+        "In ancient Egypt, chamomile was dedicated to the sun god Ra and used "
+        "to treat fever. The Anglo-Saxons counted it among their nine sacred herbs, "
+        "believed to repel poison and disease. In medieval monastery gardens, it was "
+        "planted between paving stones and called the \"plant of the walker\" — "
+        "the more it was trodden upon, the more it thrived."
     ),
     regions = (
-        "Europe  ·  Asie  ·  Afrique du Nord  ·  "
-        "Amérique du Nord (naturalisée)  ·  Australie (naturalisée)"
+        "Europe  ·  Asia  ·  North Africa  ·  "
+        "North America (naturalized)  ·  Australia (naturalized)"
     ),
-    out_name = "/home/user/Ebook/botanica_demo.png",
+    illus_main    = "/home/user/Ebook/kohler_main.jpg",
+    illus_detail1 = "/home/user/Ebook/kohler_detail1.jpg",
+    illus_detail2 = "/home/user/Ebook/kohler_detail2.jpg",
+    out_name      = "/home/user/Ebook/botanica_demo.png",
 )
