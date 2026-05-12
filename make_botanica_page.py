@@ -130,20 +130,40 @@ def illus_placeholder(img, d, x0, y0, x1, y1, label="Illustration · Köhler 188
         d.text(((x0+x1)//2, mid + 34), sublabel, fill=LGOLD, font=fn2, anchor="mm")
 
 
-def paste_illustration(img, illus_path, x0, y0, x1, y1):
-    bw, bh = x1 - x0, y1 - y0
-    try:
-        il = Image.open(illus_path).convert("RGB")
-        ratio = min(bw / il.width, bh / il.height)
-        nw, nh = int(il.width * ratio), int(il.height * ratio)
-        il = il.resize((nw, nh), Image.LANCZOS)
-        ox = x0 + (bw - nw) // 2
-        oy = y0 + (bh - nh) // 2
-        img.paste(il, (ox, oy))
-        return True
-    except Exception as e:
-        print(f"  ✗ illustration: {e}")
-        return False
+def sample_bg_color(src_img):
+    """Average the edge pixels to get the illustration's background colour."""
+    w, h = src_img.size
+    pts  = [(5,5),(w-5,5),(5,h-5),(w-5,h-5),
+            (w//4,5),(w//2,5),(3*w//4,5),
+            (w//4,h-5),(w//2,h-5),(3*w//4,h-5)]
+    pixels = [src_img.getpixel(p) for p in pts]
+    return tuple(sum(c[i] for c in pixels)//len(pixels) for i in range(3))
+
+
+def place_crop(page_img, src_img, bg_col, fracs, dst_box):
+    """
+    Crop src_img at fractional coordinates (fx0,fy0,fx1,fy1),
+    fill dst_box on page_img with bg_col so the cut is invisible,
+    then paste the cropped region centred inside.
+    """
+    bx0, by0, bx1, by1 = dst_box
+    bw, bh = bx1 - bx0, by1 - by0
+
+    # Fill box with source background → seamless cutout
+    page_img.paste(Image.new("RGB", (bw, bh), bg_col), (bx0, by0))
+
+    sw, sh = src_img.size
+    crop = src_img.crop((int(fracs[0]*sw), int(fracs[1]*sh),
+                         int(fracs[2]*sw), int(fracs[3]*sh)))
+    cw, ch = crop.size
+    ratio  = min(bw/cw, bh/ch) * 0.96   # tiny padding
+    nw, nh = int(cw*ratio), int(ch*ratio)
+    crop   = crop.resize((nw, nh), Image.LANCZOS)
+    page_img.paste(crop, (bx0 + (bw-nw)//2, by0 + (bh-nh)//2))
+
+    # Thin gold border on top
+    ImageDraw.Draw(page_img).rectangle([bx0, by0, bx1, by1],
+                                        outline=LGOLD, width=1)
 
 
 # ── Main page generator ───────────────────────────────────────────────────────
@@ -203,57 +223,91 @@ def make_botanica_page(
     hline(d, y, color=GOLD, h=2)
     y += 24
 
-    # ── Illustration — fill full width, centre-crop height ───────────
-    ILLUS_TARGET_H = 1060
-    ix0, ix1       = MARGIN, W - MARGIN
-    iw             = ix1 - ix0
+    # ── Illustrations — 2-row grid with seamless background cutouts ──
+    ROW1_H  = 600
+    ROW2_H  = 235
+    GAP     = 10
+    PW      = (TW - 2*16) // 3
 
-    fn_cap = ImageFont.truetype(FC_ITAL, 40)
+    fn_cap    = ImageFont.truetype(FC_ITAL, 38)
+    fn_legend = ImageFont.truetype(FC_REG,  38)
+    fn_panel  = ImageFont.truetype(FC_ITAL, 36)
+
+    # Detail panel sub-captions: label + legend text per panel
+    panel_captions = [
+        ("a", "2. Flower head cross-section"),
+        ("b", "3. Ray petal  4. Disc floret  5. Bud  6–7. Magnified florets"),
+        ("c", "8–9. Achene  10–13. Seeds  19. Stem & leaf detail"),
+    ]
 
     if illus_main and os.path.exists(illus_main):
         try:
-            raw   = Image.open(illus_main).convert("RGB")
-            # Scale to fill full width
-            scale = iw / raw.width
-            sw    = iw
-            sh    = int(raw.height * scale)
-            sized = raw.resize((sw, sh), Image.LANCZOS)
+            raw    = Image.open(illus_main).convert("RGB")
+            bg_col = sample_bg_color(raw)
 
-            if sh > ILLUS_TARGET_H:
-                # Centre-crop vertically: keep the richest middle band
-                top = (sh - ILLUS_TARGET_H) // 2
-                sized = sized.crop((0, top, sw, top + ILLUS_TARGET_H))
-                used_h = ILLUS_TARGET_H
-            else:
-                used_h = sh
+            # Row 1 — central plant
+            place_crop(img, raw, bg_col,
+                       (0.12, 0.01, 0.88, 0.74),
+                       (MARGIN, y, W-MARGIN, y+ROW1_H))
+            y += ROW1_H + GAP
 
-            img.paste(sized, (ix0, y))
-            d.rectangle([ix0, y, ix1, y + used_h], outline=LGOLD, width=1)
+            # Row 2 — three detail panels
+            crops = [
+                (0.01, 0.47, 0.44, 0.92),
+                (0.52, 0.00, 0.99, 0.42),
+                (0.08, 0.72, 0.92, 1.00),
+            ]
+            panel_tops = []
+            for i, frac in enumerate(crops):
+                px = MARGIN + i * (PW + 16)
+                place_crop(img, raw, bg_col, frac,
+                           (px, y, px+PW, y+ROW2_H))
+                panel_tops.append(px)
+            y += ROW2_H + 6
+
+            # Sub-captions below each panel
+            for i, (lbl, txt) in enumerate(panel_captions):
+                px    = panel_tops[i]
+                pcx   = px + PW // 2
+                label = f"{lbl}.  {txt}"
+                d.text((pcx, y), label, fill=LGOLD, font=fn_panel, anchor="mt")
+            y += text_h("a", fn_panel, d) + 14
+
         except Exception as e:
             print(f"  ✗ illustration: {e}")
-            illus_placeholder(img, d, ix0, y, ix1, y + ILLUS_TARGET_H,
-                              f"{name_la}", "Full plant · Köhler 1887")
-            used_h = ILLUS_TARGET_H
+            illus_placeholder(img, d, MARGIN, y, W-MARGIN,
+                              y+ROW1_H+GAP+ROW2_H, name_la, "Köhler 1887")
+            y += ROW1_H + GAP + ROW2_H + GAP
     else:
-        illus_placeholder(img, d, ix0, y, ix1, y + ILLUS_TARGET_H,
-                          f"{name_la}", "Full plant · Köhler 1887")
-        used_h = ILLUS_TARGET_H
+        illus_placeholder(img, d, MARGIN, y, W-MARGIN,
+                          y+ROW1_H+GAP+ROW2_H, name_la, "Köhler 1887")
+        y += ROW1_H + GAP + ROW2_H + GAP
 
-    y += used_h + 12
-
-    # ── Caption ───────────────────────────────────────────────────────
+    # ── Source + full numbered legend ─────────────────────────────────
     hline(d, y, color=LGOLD, h=1)
-    y += 14
-    caption = (
-        "Köhler's Medizinal-Pflanzen, 1887  ·  "
-        "1. Whole plant  2. Flower cross-section  3. Petal  "
-        "4. Stamen  5. Floral bud  6. Disc floret  "
-        "7. Ray floret  8. Seed  9. Root detail"
-    )
-    for line in wrap(caption, fn_cap, TW, d):
-        d.text((CX, y), line, fill=LGOLD, font=fn_cap, anchor="mt")
-        y += text_h(line, fn_cap, d) + 6
-    y += 8
+    y += 12
+    d.text((CX, y),
+           "Köhler's Medizinal-Pflanzen, Franz Eugen Köhler, 1887  ·  Public domain",
+           fill=LGOLD, font=fn_cap, anchor="mt")
+    y += text_h("A", fn_cap, d) + 8
+
+    # Full numbered legend in two columns
+    legend_items = [
+        "1. Flowering plant",   "7. Ray floret (mag.)",
+        "2. Flower head section","8. Achene",
+        "3. Ray petal",          "9. Achene section",
+        "4. Disc floret",        "10–11. Seeds",
+        "5. Flower bud",         "12–13. Seed sections",
+        "6. Disc floret (mag.)", "19. Leaf & stem",
+    ]
+    col_w = TW // 2
+    lh    = text_h("A", fn_legend, d) + 8
+    for i, item in enumerate(legend_items):
+        col = i % 2
+        row = i // 2
+        d.text((MARGIN + col*col_w, y + row*lh), item, fill=DARK, font=fn_legend)
+    y += (len(legend_items)//2) * lh + 10
+
     hline(d, y, color=GOLD, h=2)
     y += 30
 
