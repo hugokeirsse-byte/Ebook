@@ -252,70 +252,90 @@ def make_botanica_page(
         illus_placeholder(img, d, MARGIN, y, MARGIN+LEFT_W, y+COL_H, name_la)
 
     # Right — plant name + legend
-    fn_rname  = ImageFont.truetype(FC_BOLD, 82)
-    fn_rlatin = ImageFont.truetype(FC_ITAL, 52)
-    fn_rfam   = ImageFont.truetype(FC_REG,  42)
-    fn_lhdr   = ImageFont.truetype(FP_BOLD, 42)
-    fn_litem  = ImageFont.truetype(FC_REG,  42)
-    fn_lsrc   = ImageFont.truetype(FC_ITAL, 36)
+    fn_rname  = ImageFont.truetype(FC_BOLD, 80)
+    fn_rlatin = ImageFont.truetype(FC_ITAL, 50)
+    fn_rfam   = ImageFont.truetype(FC_REG,  40)
+    fn_lhdr   = ImageFont.truetype(FP_BOLD, 38)
+    fn_litem  = ImageFont.truetype(FC_REG,  36)
+    fn_lsrc   = ImageFont.truetype(FC_ITAL, 32)
 
-    ry = y + 22
+    ry = y + 18
 
     # Plant name
     d.text((RIGHT_X, ry), name_fr.upper(), fill=DARK, font=fn_rname)
-    ry += text_h(name_fr.upper(), fn_rname, d) + 8
+    ry += text_h(name_fr.upper(), fn_rname, d) + 7
 
     # Latin
     d.text((RIGHT_X, ry), name_la, fill=GOLD, font=fn_rlatin)
-    ry += text_h(name_la, fn_rlatin, d) + 8
+    ry += text_h(name_la, fn_rlatin, d) + 7
 
     # Family · origin (wrapped)
     for line in wrap(f"{family}  ·  {origin}", fn_rfam, RIGHT_W, d):
         d.text((RIGHT_X, ry), line, fill=DARK, font=fn_rfam)
-        ry += text_h(line, fn_rfam, d) + 5
+        ry += text_h(line, fn_rfam, d) + 4
 
     # Habitat
-    ry += 6
+    ry += 4
     d.text((RIGHT_X, ry), "Habitat :", fill=FOREST, font=fn_rfam)
     hw = d.textbbox((0,0), "Habitat :  ", font=fn_rfam)[2]
     d.text((RIGHT_X + hw, ry), habitat, fill=DARK, font=fn_rfam)
-    ry += text_h("A", fn_rfam, d) + 16
+    ry += text_h("A", fn_rfam, d) + 12
 
     # Rule
     d.rectangle([RIGHT_X, ry, W-MARGIN, ry+1], fill=LGOLD)
-    ry += 20
+    ry += 14
 
-    # Legend header
+    # Legend header + "all details magnified" note
     d.text((RIGHT_X, ry), "Figure Legend", fill=FOREST, font=fn_lhdr)
-    ry += text_h("A", fn_lhdr, d) + 18
+    fn_lnote = ImageFont.truetype(FC_ITAL, 30)
+    lhdr_w = d.textbbox((0,0), "Figure Legend  ", font=fn_lhdr)[2]
+    note_y = ry + text_h("A", fn_lhdr, d) - text_h("A", fn_lnote, d)
+    d.text((RIGHT_X + lhdr_w, note_y), "· all details magnified", fill=LGOLD, font=fn_lnote)
+    ry += text_h("A", fn_lhdr, d) + 12
 
-    # Legend items — airy spacing
+    # Legend items — exact from Köhler's original (two mini-columns)
     legend_items = [
-        ("1.",     "Flowering plant"),
-        ("2.",     "Flower head cross-section"),
-        ("3.",     "Ray floret (petal)"),
-        ("4.",     "Disc floret"),
-        ("5.",     "Flower bud"),
-        ("6.",     "Disc floret — magnified"),
-        ("7.",     "Ray floret — magnified"),
-        ("8.",     "Achene"),
-        ("9.",     "Achene cross-section"),
-        ("10–11.", "Seeds"),
-        ("12–13.", "Seed cross-sections"),
-        ("19.",    "Leaf & stem detail"),
+        ("A.",   "Plant, natural size"),
+        ("1.",   "Flower head with involucre"),
+        ("2.",   "Flower head — long. section"),
+        ("3.",   "Ray floret"),
+        ("4.",   "Disc floret — closed"),
+        ("5.",   "Disc floret — open"),
+        ("6.",   "Disc floret — long. section"),
+        ("7.",   "Stamen tube, style & stigmas"),
+        ("8.",   "Stigmas of disc floret"),
+        ("9.",   "Pollen grain"),
+        ("10.",  "Receptacle"),
+        ("11.",  "Achene"),
+        ("12.",  "Achene — cross-section"),
+        ("13.",  "Achene — long. section"),
     ]
-    num_w = d.textbbox((0,0), "10–11.  ", font=fn_litem)[2]
-    li_h  = text_h("A", fn_litem, d) + 16   # airy gap
-    for num, desc in legend_items:
-        if ry + li_h > col_top + COL_H - 52:
+    num_w  = d.textbbox((0,0), "13.  ", font=fn_litem)[2]
+    li_h   = text_h("A", fn_litem, d) + 9
+    MID_X  = RIGHT_X + RIGHT_W // 2
+    split  = 8   # A + 1-7 in left, 8-13 in right
+    left_items  = legend_items[:split]
+    right_items = legend_items[split:]
+
+    for idx, (num, desc) in enumerate(left_items):
+        iy = ry + idx * li_h
+        if iy + li_h > col_top + COL_H - 44:
             break
-        d.text((RIGHT_X,         ry), num,  fill=GOLD, font=fn_litem)
-        d.text((RIGHT_X + num_w, ry), desc, fill=DARK, font=fn_litem)
-        ry += li_h
+        d.text((RIGHT_X,         iy), num,  fill=GOLD, font=fn_litem)
+        d.text((RIGHT_X + num_w, iy), desc, fill=DARK, font=fn_litem)
+
+    for idx, (num, desc) in enumerate(right_items):
+        iy = ry + idx * li_h
+        if iy + li_h > col_top + COL_H - 44:
+            break
+        d.text((MID_X,         iy), num,  fill=GOLD, font=fn_litem)
+        d.text((MID_X + num_w, iy), desc, fill=DARK, font=fn_litem)
+
+    ry += max(len(left_items), len(right_items)) * li_h
 
     # Source pinned to bottom of right column
-    src_y = col_top + COL_H - 42
-    d.rectangle([RIGHT_X, src_y - 12, W-MARGIN, src_y - 11], fill=LGOLD)
+    src_y = col_top + COL_H - 36
+    d.rectangle([RIGHT_X, src_y - 10, W-MARGIN, src_y - 9], fill=LGOLD)
     d.text((RIGHT_X, src_y),
            "Köhler's Medizinal-Pflanzen, 1887  ·  Public domain",
            fill=LGOLD, font=fn_lsrc)
