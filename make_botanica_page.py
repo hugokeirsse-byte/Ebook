@@ -203,40 +203,59 @@ def make_botanica_page(
     hline(d, y, color=GOLD, h=2)
     y += 24
 
-    # ── Illustrations ─────────────────────────────────────────────────
-    # Main illustration (left 2/3) + 2 detail squares (right 1/3 stacked)
-    ILLUS_H    = 880
-    main_x1    = MARGIN + int(TW * 0.65)
-    detail_x0  = main_x1 + 20
-    detail_x1  = W - MARGIN
-    detail_h   = (ILLUS_H - 14) // 2
+    # ── Illustration — fill full width, centre-crop height ───────────
+    ILLUS_TARGET_H = 1060
+    ix0, ix1       = MARGIN, W - MARGIN
+    iw             = ix1 - ix0
 
-    # Main
-    if illus_main and paste_illustration(img, illus_main, MARGIN, y, main_x1, y + ILLUS_H):
-        d.rectangle([MARGIN, y, main_x1, y + ILLUS_H], outline=LGOLD, width=1)
+    fn_cap = ImageFont.truetype(FC_ITAL, 40)
+
+    if illus_main and os.path.exists(illus_main):
+        try:
+            raw   = Image.open(illus_main).convert("RGB")
+            # Scale to fill full width
+            scale = iw / raw.width
+            sw    = iw
+            sh    = int(raw.height * scale)
+            sized = raw.resize((sw, sh), Image.LANCZOS)
+
+            if sh > ILLUS_TARGET_H:
+                # Centre-crop vertically: keep the richest middle band
+                top = (sh - ILLUS_TARGET_H) // 2
+                sized = sized.crop((0, top, sw, top + ILLUS_TARGET_H))
+                used_h = ILLUS_TARGET_H
+            else:
+                used_h = sh
+
+            img.paste(sized, (ix0, y))
+            d.rectangle([ix0, y, ix1, y + used_h], outline=LGOLD, width=1)
+        except Exception as e:
+            print(f"  ✗ illustration: {e}")
+            illus_placeholder(img, d, ix0, y, ix1, y + ILLUS_TARGET_H,
+                              f"{name_la}", "Full plant · Köhler 1887")
+            used_h = ILLUS_TARGET_H
     else:
-        illus_placeholder(img, d, MARGIN, y, main_x1, y + ILLUS_H,
+        illus_placeholder(img, d, ix0, y, ix1, y + ILLUS_TARGET_H,
                           f"{name_la}", "Full plant · Köhler 1887")
+        used_h = ILLUS_TARGET_H
 
-    # Detail 1
-    if illus_detail1 and paste_illustration(img, illus_detail1, detail_x0, y, detail_x1, y + detail_h):
-        d.rectangle([detail_x0, y, detail_x1, y + detail_h], outline=LGOLD, width=1)
-    else:
-        illus_placeholder(img, d, detail_x0, y, detail_x1, y + detail_h,
-                          "Flower detail")
+    y += used_h + 12
 
-    # Detail 2
-    dy2 = y + detail_h + 14
-    if illus_detail2 and paste_illustration(img, illus_detail2, detail_x0, dy2, detail_x1, dy2 + detail_h):
-        d.rectangle([detail_x0, dy2, detail_x1, dy2 + detail_h], outline=LGOLD, width=1)
-    else:
-        illus_placeholder(img, d, detail_x0, dy2, detail_x1, dy2 + detail_h,
-                          "Root & seed")
-
-    y += ILLUS_H + 30
-
+    # ── Caption ───────────────────────────────────────────────────────
+    hline(d, y, color=LGOLD, h=1)
+    y += 14
+    caption = (
+        "Köhler's Medizinal-Pflanzen, 1887  ·  "
+        "1. Whole plant  2. Flower cross-section  3. Petal  "
+        "4. Stamen  5. Floral bud  6. Disc floret  "
+        "7. Ray floret  8. Seed  9. Root detail"
+    )
+    for line in wrap(caption, fn_cap, TW, d):
+        d.text((CX, y), line, fill=LGOLD, font=fn_cap, anchor="mt")
+        y += text_h(line, fn_cap, d) + 6
+    y += 8
     hline(d, y, color=GOLD, h=2)
-    y += 32
+    y += 30
 
     # ── Plant name ────────────────────────────────────────────────────
     d.text((CX, y), name_fr.upper(), fill=DARK, font=fn_name, anchor="mt")
