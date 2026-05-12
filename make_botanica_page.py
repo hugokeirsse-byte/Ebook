@@ -223,109 +223,110 @@ def make_botanica_page(
     hline(d, y, color=GOLD, h=2)
     y += 24
 
-    # ── Illustrations — 2-row grid with seamless background cutouts ──
-    ROW1_H  = 600
-    ROW2_H  = 235
-    GAP     = 10
-    PW      = (TW - 2*16) // 3
+    # ── Two-column section: image LEFT | name + legend RIGHT ─────────
+    COL_H   = 1320          # height of the two-column block
+    LEFT_W  = 1080          # illustration column width
+    GAP_COL = 28            # gap between columns
+    RIGHT_X = MARGIN + LEFT_W + GAP_COL
+    RIGHT_W = W - MARGIN - RIGHT_X
 
-    fn_cap    = ImageFont.truetype(FC_ITAL, 38)
-    fn_legend = ImageFont.truetype(FC_REG,  38)
-    fn_panel  = ImageFont.truetype(FC_ITAL, 36)
+    # Vertical separator
+    sep_x = MARGIN + LEFT_W + GAP_COL // 2
+    d.rectangle([sep_x, y, sep_x+1, y+COL_H], fill=LGOLD)
 
-    # Detail panel sub-captions: label + legend text per panel
-    panel_captions = [
-        ("a", "2. Flower head cross-section"),
-        ("b", "3. Ray petal  4. Disc floret  5. Bud  6–7. Magnified florets"),
-        ("c", "8–9. Achene  10–13. Seeds  19. Stem & leaf detail"),
-    ]
-
+    # Left — full illustration, fit to column, cream background
+    col_top = y
     if illus_main and os.path.exists(illus_main):
         try:
             raw    = Image.open(illus_main).convert("RGB")
             bg_col = sample_bg_color(raw)
-
-            # Row 1 — central plant
-            place_crop(img, raw, bg_col,
-                       (0.12, 0.01, 0.88, 0.74),
-                       (MARGIN, y, W-MARGIN, y+ROW1_H))
-            y += ROW1_H + GAP
-
-            # Row 2 — three detail panels
-            crops = [
-                (0.01, 0.47, 0.44, 0.92),
-                (0.52, 0.00, 0.99, 0.42),
-                (0.08, 0.72, 0.92, 1.00),
-            ]
-            panel_tops = []
-            for i, frac in enumerate(crops):
-                px = MARGIN + i * (PW + 16)
-                place_crop(img, raw, bg_col, frac,
-                           (px, y, px+PW, y+ROW2_H))
-                panel_tops.append(px)
-            y += ROW2_H + 6
-
-            # Sub-captions below each panel
-            for i, (lbl, txt) in enumerate(panel_captions):
-                px    = panel_tops[i]
-                pcx   = px + PW // 2
-                label = f"{lbl}.  {txt}"
-                d.text((pcx, y), label, fill=LGOLD, font=fn_panel, anchor="mt")
-            y += text_h("a", fn_panel, d) + 14
-
+            # Fill column with image background
+            img.paste(Image.new("RGB", (LEFT_W, COL_H), bg_col), (MARGIN, y))
+            # Scale to fit column
+            ratio = min(LEFT_W / raw.width, COL_H / raw.height)
+            nw    = int(raw.width  * ratio)
+            nh    = int(raw.height * ratio)
+            sized = raw.resize((nw, nh), Image.LANCZOS)
+            ox    = MARGIN + (LEFT_W - nw) // 2
+            oy    = y       + (COL_H - nh) // 2
+            img.paste(sized, (ox, oy))
+            d.rectangle([MARGIN, y, MARGIN+LEFT_W, y+COL_H], outline=LGOLD, width=1)
         except Exception as e:
             print(f"  ✗ illustration: {e}")
-            illus_placeholder(img, d, MARGIN, y, W-MARGIN,
-                              y+ROW1_H+GAP+ROW2_H, name_la, "Köhler 1887")
-            y += ROW1_H + GAP + ROW2_H + GAP
+            illus_placeholder(img, d, MARGIN, y, MARGIN+LEFT_W, y+COL_H, name_la)
     else:
-        illus_placeholder(img, d, MARGIN, y, W-MARGIN,
-                          y+ROW1_H+GAP+ROW2_H, name_la, "Köhler 1887")
-        y += ROW1_H + GAP + ROW2_H + GAP
+        illus_placeholder(img, d, MARGIN, y, MARGIN+LEFT_W, y+COL_H, name_la)
 
-    # ── Source + full numbered legend ─────────────────────────────────
-    hline(d, y, color=LGOLD, h=1)
-    y += 12
-    d.text((CX, y),
-           "Köhler's Medizinal-Pflanzen, Franz Eugen Köhler, 1887  ·  Public domain",
-           fill=LGOLD, font=fn_cap, anchor="mt")
-    y += text_h("A", fn_cap, d) + 8
+    # Right — plant name + legend
+    fn_rname  = ImageFont.truetype(FC_BOLD,  94)
+    fn_rlatin = ImageFont.truetype(FC_ITAL,  58)
+    fn_rfam   = ImageFont.truetype(FC_REG,   46)
+    fn_lhdr   = ImageFont.truetype(FP_BOLD,  46)
+    fn_litem  = ImageFont.truetype(FC_REG,   44)
+    fn_lsrc   = ImageFont.truetype(FC_ITAL,  38)
 
-    # Full numbered legend in two columns
+    ry = y + 24
+
+    # Plant name
+    d.text((RIGHT_X, ry), name_fr.upper(), fill=DARK, font=fn_rname)
+    ry += text_h(name_fr.upper(), fn_rname, d) + 10
+
+    # Latin
+    d.text((RIGHT_X, ry), name_la, fill=GOLD, font=fn_rlatin)
+    ry += text_h(name_la, fn_rlatin, d) + 10
+
+    # Family · origin
+    fam_text = f"{family}  ·  {origin}"
+    for line in wrap(fam_text, fn_rfam, RIGHT_W, d):
+        d.text((RIGHT_X, ry), line, fill=DARK, font=fn_rfam)
+        ry += text_h(line, fn_rfam, d) + 6
+    ry += 14
+
+    # Rule
+    d.rectangle([RIGHT_X, ry, W-MARGIN, ry+1], fill=LGOLD)
+    ry += 18
+
+    # Legend header
+    d.text((RIGHT_X, ry), "Figure Legend", fill=FOREST, font=fn_lhdr)
+    ry += text_h("A", fn_lhdr, d) + 14
+
+    # Legend items
     legend_items = [
-        "1. Flowering plant",   "7. Ray floret (mag.)",
-        "2. Flower head section","8. Achene",
-        "3. Ray petal",          "9. Achene section",
-        "4. Disc floret",        "10–11. Seeds",
-        "5. Flower bud",         "12–13. Seed sections",
-        "6. Disc floret (mag.)", "19. Leaf & stem",
+        ("1.",  "Flowering plant"),
+        ("2.",  "Flower head cross-section"),
+        ("3.",  "Ray floret (petal)"),
+        ("4.",  "Disc floret"),
+        ("5.",  "Flower bud"),
+        ("6.",  "Disc floret — magnified"),
+        ("7.",  "Ray floret — magnified"),
+        ("8.",  "Achene"),
+        ("9.",  "Achene cross-section"),
+        ("10–11.", "Seeds"),
+        ("12–13.", "Seed cross-sections"),
+        ("19.", "Leaf & stem detail"),
     ]
-    col_w = TW // 2
-    lh    = text_h("A", fn_legend, d) + 8
-    for i, item in enumerate(legend_items):
-        col = i % 2
-        row = i // 2
-        d.text((MARGIN + col*col_w, y + row*lh), item, fill=DARK, font=fn_legend)
-    y += (len(legend_items)//2) * lh + 10
+    num_w = d.textbbox((0,0), "10–11.  ", font=fn_litem)[2]
+    li_h  = text_h("A", fn_litem, d) + 9
+    for num, desc in legend_items:
+        if ry + li_h > col_top + COL_H - 50:
+            break
+        d.text((RIGHT_X,          ry), num,  fill=GOLD, font=fn_litem)
+        d.text((RIGHT_X + num_w,  ry), desc, fill=DARK, font=fn_litem)
+        ry += li_h
+
+    # Source at bottom of right column
+    src_y = col_top + COL_H - 44
+    d.rectangle([RIGHT_X, src_y-10, W-MARGIN, src_y-9], fill=LGOLD)
+    d.text((RIGHT_X, src_y),
+           "Köhler's Medizinal-Pflanzen, 1887  ·  Public domain",
+           fill=LGOLD, font=fn_lsrc)
+
+    y = col_top + COL_H + 28
 
     hline(d, y, color=GOLD, h=2)
     y += 30
 
-    # ── Plant name ────────────────────────────────────────────────────
-    d.text((CX, y), name_fr.upper(), fill=DARK, font=fn_name, anchor="mt")
-    y += text_h(name_fr.upper(), fn_name, d) + 12
-
-    d.text((CX, y), name_la, fill=GOLD, font=fn_latin, anchor="mt")
-    y += text_h(name_la, fn_latin, d) + 16
-
-    d.text((CX, y), f"{family}  ·  {origin}",
-           fill=DARK, font=fn_family, anchor="mt")
-    y += text_h(family, fn_family, d) + 28
-
-    hline(d, y, color=LGOLD, h=1)
-    y += 28
-
-    # ── Quick-ref inline row ──────────────────────────────────────────
+    # ── Quick-ref row ─────────────────────────────────────────────────
     y = inline_pair(d, y, "Parts used: ",         parts_used,       fn_label, fn_body)
     y = inline_pair(d, y, "Harvest: ",            harvest,          fn_label, fn_body)
     y = inline_pair(d, y, "Active compounds: ",   active_compounds, fn_label, fn_props)
